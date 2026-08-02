@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeetPath - Ultimate DSA Guide & Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="bg-gradient"></div>
+        <div class="bg-grid"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <div class="logo-text-group">
+                    <span class="logo-text">LeetPath</span>
+                    <span class="logo-tagline">Ultimate DSA Guide & Tracker</span>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="header-stat">
+                    <span class="stat-num" id="header-completed">0</span>
+                    <span class="stat-label">Completed</span>
+                </div>
+                <div class="header-stat">
+                    <span class="stat-num" id="header-attempted">0</span>
+                    <span class="stat-label">Attempted</span>
+                </div>
+                <div class="header-stat">
+                    <span class="stat-num" id="header-total">400</span>
+                    <span class="stat-label">Total</span>
+                </div>
+                <div class="header-stat progress-stat">
+                    <div class="mini-progress-ring">
+                        <svg width="48" height="48" viewBox="0 0 48 48">
+                            <circle class="mini-ring-bg" cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
+                            <circle class="mini-ring-fill" cx="24" cy="24" r="20" fill="none" stroke="url(#headerGradient)" stroke-width="4" stroke-linecap="round" id="header-progress-ring"/>
+                            <defs>
+                                <linearGradient id="headerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#6366f1"/>
+                                    <stop offset="100%" stop-color="#8b5cf6"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span class="mini-ring-text" id="header-percent">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Progress Section -->
+    <section class="hero-progress">
+        <div class="progress-card">
+            <div class="progress-ring-container">
+                <svg class="progress-ring" width="180" height="180" viewBox="0 0 180 180">
+                    <circle class="progress-ring-bg" cx="90" cy="90" r="80" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="12"/>
+                    <circle class="progress-ring-fill" cx="90" cy="90" r="80" fill="none" stroke="url(#ringGradient)" stroke-width="12" stroke-linecap="round" id="overall-progress-ring"/>
+                    <defs>
+                        <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#6366f1"/>
+                            <stop offset="100%" stop-color="#8b5cf6"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div class="progress-ring-text">
+                    <span class="progress-percentage" id="overall-percentage">0%</span>
+                    <span class="progress-label">Completed</span>
+                </div>
+            </div>
+            <div class="progress-details">
+                <h2 class="progress-title">Your Progress</h2>
+                <p class="progress-subtitle">Keep going! You're doing great.</p>
+                <div class="progress-breakdown">
+                    <div class="breakdown-item">
+                        <span class="breakdown-dot completed"></span>
+                        <span class="breakdown-label">Completed</span>
+                        <span class="breakdown-value" id="completed-count">0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-dot attempted"></span>
+                        <span class="breakdown-label">Attempted</span>
+                        <span class="breakdown-value" id="attempted-count">0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-dot remaining"></span>
+                        <span class="breakdown-label">Remaining</span>
+                        <span class="breakdown-value" id="remaining-count">400</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Topics</h3>
+                <ul class="topic-list" id="topic-list">
+                    <!-- Topics populated by JS -->
+                </ul>
+            </div>
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Filters</h3>
+                <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select id="filter-status" onchange="applyFilters()">
+                        <option value="all">All Problems</option>
+                        <option value="not-attempted">Not Attempted</option>
+                        <option value="attempted">Attempted</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Difficulty</label>
+                    <select id="filter-difficulty" onchange="applyFilters()">
+                        <option value="all">All Difficulties</option>
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                </div>
+            </div>
+            <div class="sidebar-section">
+                <button class="btn btn-export" onclick="exportProgress()">📥 Export Progress</button>
+                <button class="btn btn-reset" onclick="resetProgress()">🔄 Reset All</button>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="content">
+            <!-- Progress Bar -->
+            <div class="progress-section">
+                <div class="progress-header">
+                    <h2 id="current-topic-name">All Problems</h2>
+                    <span class="progress-text" id="topic-progress-text">0 / 400</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="topic-progress-bar" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-section">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input type="text" id="search-input" placeholder="Search problems by name or company..." onkeyup="applyFilters()">
+            </div>
+
+            <!-- Problems Table -->
+            <div class="table-container">
+                <table class="problems-table">
+                    <thead>
+                        <tr>
+                            <th class="col-status">Status</th>
+                            <th class="col-id">#</th>
+                            <th class="col-problem">Problem</th>
+                            <th class="col-difficulty">Difficulty</th>
+                            <th class="col-companies">Companies</th>
+                        </tr>
+                    </thead>
+                    <tbody id="problems-tbody">
+                        <!-- Problems populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span class="toast-icon">✓</span>
+        <span class="toast-message" id="toast-message">Progress saved!</span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
