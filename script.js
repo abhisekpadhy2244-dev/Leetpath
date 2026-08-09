@@ -3,7 +3,7 @@ const API_URL =
   window.location.hostname === "localhost" ||
   window.location.hostname === "127.0.0.1"
     ? "http://localhost:5000"
-    : "";
+    : "https://leetpath-19xb.onrender.com";
 
 // ==================== STATE ====================
 let authToken = localStorage.getItem("authToken");
