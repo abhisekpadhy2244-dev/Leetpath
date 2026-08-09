@@ -1,0 +1,76 @@
+{
+  "users": [
+    {
+      "id": "1786046101808",
+      "username": "testuser20156",
+      "email": "test74754@example.com",
+      "password": "$2a$10$31gYtO3BEqWrSyIIYkeJ6uh9IktycBKs8oT7SDZD7QpQuVltzFN8W",
+      "leetcodeData": {
+        "totalSolved": 0,
+        "easySolved": 0,
+        "mediumSolved": 0,
+        "hardSolved": 0,
+        "lastUpdated": null
+      },
+      "progress": {
+        "1": "attempted"
+      },
+      "googleId": null,
+      "avatar": null,
+      "createdAt": "2026-08-06T19:55:01.808Z",
+      "updatedAt": "2026-08-06T19:55:01.875Z"
+    },
+    {
+      "id": "1786127467155",
+      "username": "abhisek_padhy",
+      "email": "abhisekpadhy2244@gmail.com",
+      "password": "",
+      "googleId": "102978776244231321788",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocK-fc_DKQR391iIReYqmS-NDFycPpUiewNTG92h_d2keoj5ZKcY=s96-c",
+      "leetcodeData": {
+        "username": "Z68phyhrc3",
+        "totalSolved": 107,
+        "easySolved": 81,
+        "mediumSolved": 24,
+        "hardSolved": 2,
+        "ranking": 1531236,
+        "realName": "Abhisek Padhy",
+        "avatar": "https://assets.leetcode.com/users/Z68phyhrc3/avatar_1730433365.png",
+        "lastUpdated": "2026-08-09T06:16:17.056Z"
+      },
+      "progress": {
+        "10": "completed",
+        "15": "completed",
+        "16": "completed",
+        "45": "completed",
+        "47": "not-attempted",
+        "48": "completed",
+        "248": "completed",
+        "363": "not-attempted"
+      },
+      "createdAt": "2026-08-07T18:31:07.155Z",
+      "updatedAt": "2026-08-09T06:16:17.057Z",
+      "leetcodeUsername": "Z68phyhrc3"
+    },
+    {
+      "id": "1786131635531",
+      "username": "Ricky4321",
+      "email": "padhyabhisek5885@gmail.com",
+      "password": "$2a$10$O4KC1mY8sJMgckgdtuSXbuKZRsDuU0365jjX9/NH9ifPl55wUSeuW",
+      "leetcodeData": {
+        "totalSolved": 0,
+        "easySolved": 0,
+        "mediumSolved": 0,
+        "hardSolved": 0,
+        "lastUpdated": null
+      },
+      "progress": {
+        "362": "not-attempted"
+      },
+      "googleId": null,
+      "avatar": null,
+      "createdAt": "2026-08-07T19:40:35.531Z",
+      "updatedAt": "2026-08-07T19:42:16.448Z"
+    }
+  ]
+}

@@ -3,188 +3,312 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LeetPath - Ultimate DSA Guide & Tracker</title>
-    <link rel="stylesheet" href="style.css">
+    <title>LeetPath - Ultimate DSA Tracker</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="description" content="Track your DSA journey with LeetPath. 400+ curated problems, progress tracking, LeetCode sync, and more.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <!-- Animated Background -->
-    <div class="bg-animation">
-        <div class="bg-gradient"></div>
-        <div class="bg-grid"></div>
+    <div class="bg-layer" id="bg-layer">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="grid-overlay"></div>
     </div>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="header-container">
-            <div class="logo">
-                <span class="logo-icon">⚡</span>
-                <div class="logo-text-group">
-                    <span class="logo-text">LeetPath</span>
-                    <span class="logo-tagline">Ultimate DSA Guide & Tracker</span>
-                </div>
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+        <div class="modal-container">
+            <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+            
+            <div class="modal-header">
+                <div class="logo-icon-large">⚡</div>
+                <h1 id="auth-title">Welcome to LeetPath</h1>
+                <p class="modal-subtitle">Track your DSA mastery journey</p>
             </div>
-            <div class="header-stats">
-                <div class="header-stat">
-                    <span class="stat-num" id="header-completed">0</span>
-                    <span class="stat-label">Completed</span>
-                </div>
-                <div class="header-stat">
-                    <span class="stat-num" id="header-attempted">0</span>
-                    <span class="stat-label">Attempted</span>
-                </div>
-                <div class="header-stat">
-                    <span class="stat-num" id="header-total">400</span>
-                    <span class="stat-label">Total</span>
-                </div>
-                <div class="header-stat progress-stat">
-                    <div class="mini-progress-ring">
-                        <svg width="48" height="48" viewBox="0 0 48 48">
-                            <circle class="mini-ring-bg" cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
-                            <circle class="mini-ring-fill" cx="24" cy="24" r="20" fill="none" stroke="url(#headerGradient)" stroke-width="4" stroke-linecap="round" id="header-progress-ring"/>
-                            <defs>
-                                <linearGradient id="headerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stop-color="#6366f1"/>
-                                    <stop offset="100%" stop-color="#8b5cf6"/>
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                        <span class="mini-ring-text" id="header-percent">0%</span>
-                    </div>
-                </div>
+
+            <!-- Auth Tabs -->
+            <div class="auth-tabs" role="tablist">
+                <button class="auth-tab active" role="tab" aria-selected="true" data-tab="login" id="tab-login">Sign In</button>
+                <button class="auth-tab" role="tab" aria-selected="false" data-tab="register" id="tab-register">Get Started</button>
             </div>
+
+            <!-- Login Form -->
+            <form class="auth-form active" id="login-form" role="tabpanel" aria-labelledby="tab-login">
+                <div class="social-login">
+                    <button type="button" class="btn-google" id="btn-google-login" aria-label="Sign in with Google">
+                        <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                        <span>Continue with Google</span>
+                    </button>
+                </div>
+                <div class="divider"><span>or</span></div>
+                
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="you@example.com" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+            </form>
+
+            <!-- Register Form -->
+            <form class="auth-form" id="register-form" role="tabpanel" aria-labelledby="tab-register" hidden>
+                <div class="social-login">
+                    <button type="button" class="btn-google" id="btn-google-register" aria-label="Sign up with Google">
+                        <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                        <span>Continue with Google</span>
+                    </button>
+                </div>
+                <div class="divider"><span>or</span></div>
+                
+                <div class="form-group">
+                    <label for="register-username">Username</label>
+                    <input type="text" id="register-username" placeholder="Choose a username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" placeholder="you@example.com" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+            </form>
+
+            <p class="modal-footer">By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></p>
         </div>
-    </header>
+    </div>
 
-    <!-- Hero Progress Section -->
-    <section class="hero-progress">
-        <div class="progress-card">
-            <div class="progress-ring-container">
-                <svg class="progress-ring" width="180" height="180" viewBox="0 0 180 180">
-                    <circle class="progress-ring-bg" cx="90" cy="90" r="80" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="12"/>
-                    <circle class="progress-ring-fill" cx="90" cy="90" r="80" fill="none" stroke="url(#ringGradient)" stroke-width="12" stroke-linecap="round" id="overall-progress-ring"/>
-                    <defs>
-                        <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#6366f1"/>
-                            <stop offset="100%" stop-color="#8b5cf6"/>
-                        </linearGradient>
-                    </defs>
-                </svg>
-                <div class="progress-ring-text">
-                    <span class="progress-percentage" id="overall-percentage">0%</span>
-                    <span class="progress-label">Completed</span>
-                </div>
-            </div>
-            <div class="progress-details">
-                <h2 class="progress-title">Your Progress</h2>
-                <p class="progress-subtitle">Keep going! You're doing great.</p>
-                <div class="progress-breakdown">
-                    <div class="breakdown-item">
-                        <span class="breakdown-dot completed"></span>
-                        <span class="breakdown-label">Completed</span>
-                        <span class="breakdown-value" id="completed-count">0</span>
-                    </div>
-                    <div class="breakdown-item">
-                        <span class="breakdown-dot attempted"></span>
-                        <span class="breakdown-label">Attempted</span>
-                        <span class="breakdown-value" id="attempted-count">0</span>
-                    </div>
-                    <div class="breakdown-item">
-                        <span class="breakdown-dot remaining"></span>
-                        <span class="breakdown-label">Remaining</span>
-                        <span class="breakdown-value" id="remaining-count">400</span>
+    <!-- Main App (Hidden until authenticated) -->
+    <div class="app-shell" id="app-shell" hidden>
+        <!-- Top Bar -->
+        <header class="top-bar" role="banner">
+            <div class="top-bar-inner">
+                <div class="logo">
+                    <span class="logo-mark" aria-hidden="true">⚡</span>
+                    <div class="logo-text">
+                        <span class="logo-name">LeetPath</span>
+                        <span class="logo-tag">DSA Mastery Tracker</span>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Main Container -->
-    <div class="main-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">Topics</h3>
-                <ul class="topic-list" id="topic-list">
-                    <!-- Topics populated by JS -->
-                </ul>
-            </div>
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">Filters</h3>
-                <div class="filter-group">
-                    <label class="filter-label">Status</label>
-                    <select id="filter-status" onchange="applyFilters()">
-                        <option value="all">All Problems</option>
-                        <option value="not-attempted">Not Attempted</option>
-                        <option value="attempted">Attempted</option>
-                        <option value="completed">Completed</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label class="filter-label">Difficulty</label>
-                    <select id="filter-difficulty" onchange="applyFilters()">
-                        <option value="all">All Difficulties</option>
-                        <option value="Easy">Easy</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Hard">Hard</option>
-                    </select>
-                </div>
-            </div>
-            <div class="sidebar-section">
-                <button class="btn btn-export" onclick="exportProgress()">📥 Export Progress</button>
-                <button class="btn btn-reset" onclick="resetProgress()">🔄 Reset All</button>
-            </div>
-        </aside>
+                <div class="top-actions">
+                    <!-- Search -->
+                    <div class="search-wrapper" id="search-wrapper">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <input type="search" id="global-search" placeholder="Search problems, topics, companies..." aria-label="Search problems">
+                        <kbd class="search-shortcut">⌘K</kbd>
+                    </div>
 
-        <!-- Content Area -->
-        <main class="content">
-            <!-- Progress Bar -->
-            <div class="progress-section">
-                <div class="progress-header">
-                    <h2 id="current-topic-name">All Problems</h2>
-                    <span class="progress-text" id="topic-progress-text">0 / 400</span>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar-fill" id="topic-progress-bar" style="width: 0%"></div>
+                    <!-- User Menu -->
+                    <div class="user-menu" id="user-menu">
+                        <button class="user-avatar-btn" id="user-avatar-btn" aria-expanded="false" aria-haspopup="true" aria-label="User menu">
+                            <span class="avatar" id="user-avatar">?</span>
+                        </button>
+                        <div class="user-dropdown" id="user-dropdown" role="menu" hidden>
+                            <div class="dropdown-header">
+                                <div class="dropdown-avatar" id="dropdown-avatar">?</div>
+                                <div class="dropdown-info">
+                                    <span class="dropdown-name" id="dropdown-name">User</span>
+                                    <span class="dropdown-email" id="dropdown-email">email@example.com</span>
+                                </div>
+                            </div>
+                            <hr class="dropdown-divider">
+                            <div class="dropdown-section">
+                                <span class="dropdown-section-title">LeetCode</span>
+                                <div class="leetcode-connect" id="leetcode-connect">
+                                    <input type="text" id="lc-username-input" placeholder="LeetCode username" aria-label="LeetCode username">
+                                    <button class="btn btn-sm btn-primary" id="btn-connect-lc">Connect</button>
+                                </div>
+                                <div class="leetcode-stats" id="leetcode-stats" hidden>
+                                    <div class="lc-stat"><span class="lc-stat-value" id="lc-total">0</span><span class="lc-stat-label">Total</span></div>
+                                    <div class="lc-stat"><span class="lc-stat-value" style="color:#22c55e" id="lc-easy">0</span><span class="lc-stat-label">Easy</span></div>
+                                    <div class="lc-stat"><span class="lc-stat-value" style="color:#f59e0b" id="lc-medium">0</span><span class="lc-stat-label">Medium</span></div>
+                                    <div class="lc-stat"><span class="lc-stat-value" style="color:#ef4444" id="lc-hard">0</span><span class="lc-stat-label">Hard</span></div>
+                                </div>
+                                <button class="btn btn-ghost btn-sm" id="btn-sync-lc">🔄 Sync Now</button>
+                            </div>
+                            <hr class="dropdown-divider">
+                            <button class="dropdown-item" role="menuitem" id="btn-export">📥 Export Progress</button>
+                            <button class="dropdown-item" role="menuitem" id="btn-reset">🔄 Reset Progress</button>
+                            <hr class="dropdown-divider">
+                            <button class="dropdown-item dropdown-danger" role="menuitem" id="btn-logout">Sign Out</button>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </header>
 
-            <!-- Search Bar -->
-            <div class="search-section">
-                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.35-4.35"/>
-                </svg>
-                <input type="text" id="search-input" placeholder="Search problems by name or company..." onkeyup="applyFilters()">
-            </div>
+        <!-- Main Content -->
+        <main class="main-content" role="main">
+            <div class="layout-grid">
+                <!-- Sidebar -->
+                <aside class="sidebar" role="complementary" aria-label="Topics and Filters">
+                    <!-- Progress Overview Card -->
+                    <div class="card progress-card" id="progress-overview">
+                        <div class="progress-ring-wrapper">
+                            <svg class="progress-ring-svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-labelledby="progress-title">
+                                <circle class="ring-bg" cx="60" cy="60" r="52" fill="none" stroke="currentColor" stroke-width="8" opacity="0.1"/>
+                                <circle class="ring-fill" id="overview-ring" cx="60" cy="60" r="52" fill="none" stroke="url(#ring-gradient)" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7" transform="rotate(-90 60 60)"/>
+                                <defs>
+                                    <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#6366f1"/>
+                                        <stop offset="100%" stop-color="#8b5cf6"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="ring-content">
+                                <span class="ring-percent" id="overview-percent">0%</span>
+                                <span class="ring-label">Complete</span>
+                            </div>
+                        </div>
+                        <div class="progress-meta">
+                            <h3 id="overview-title">All Problems</h3>
+                            <p class="progress-fraction" id="overview-fraction">0 / 400</p>
+                            <div class="progress-bar-sm">
+                                <div class="progress-bar-fill-sm" id="overview-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-breakdown">
+                            <div class="breakdown-item">
+                                <span class="breakdown-dot completed" aria-hidden="true"></span>
+                                <span class="breakdown-text"><span id="bp-completed">0</span> Completed</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span class="breakdown-dot attempted" aria-hidden="true"></span>
+                                <span class="breakdown-text"><span id="bp-attempted">0</span> Attempted</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span class="breakdown-dot remaining" aria-hidden="true"></span>
+                                <span class="breakdown-text"><span id="bp-remaining">400</span> Remaining</span>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Problems Table -->
-            <div class="table-container">
-                <table class="problems-table">
-                    <thead>
-                        <tr>
-                            <th class="col-status">Status</th>
-                            <th class="col-id">#</th>
-                            <th class="col-problem">Problem</th>
-                            <th class="col-difficulty">Difficulty</th>
-                            <th class="col-companies">Companies</th>
-                        </tr>
-                    </thead>
-                    <tbody id="problems-tbody">
-                        <!-- Problems populated by JS -->
-                    </tbody>
-                </table>
+                    <!-- Topics -->
+                    <div class="card">
+                        <h3 class="card-title">Topics</h3>
+                        <ul class="topic-list" id="topic-list" role="listbox" aria-label="DSA Topics"></ul>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="card">
+                        <h3 class="card-title">Filters</h3>
+                        <div class="filter-group">
+                            <label for="filter-status" class="filter-label">Status</label>
+                            <select id="filter-status" aria-label="Filter by status">
+                                <option value="all">All Problems</option>
+                                <option value="not-attempted">Not Attempted</option>
+                                <option value="attempted">Attempted</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-difficulty" class="filter-label">Difficulty</label>
+                            <select id="filter-difficulty" aria-label="Filter by difficulty">
+                                <option value="all">All Difficulties</option>
+                                <option value="Easy">Easy</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Hard">Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Content Area -->
+                <div class="content-area">
+                    <!-- Header Stats -->
+                    <div class="stats-row" role="region" aria-label="Quick Stats">
+                        <div class="stat-card" id="card-completed" data-filter="completed" role="button" tabindex="0" aria-label="Filter by completed problems">
+                            <span class="stat-icon completed" aria-hidden="true">✓</span>
+                            <div class="stat-info">
+                                <span class="stat-value" id="stat-completed">0</span>
+                                <span class="stat-label">Completed</span>
+                            </div>
+                        </div>
+                        <div class="stat-card" id="card-attempted" data-filter="attempted" role="button" tabindex="0" aria-label="Filter by attempted problems">
+                            <span class="stat-icon attempted" aria-hidden="true">⟳</span>
+                            <div class="stat-info">
+                                <span class="stat-value" id="stat-attempted">0</span>
+                                <span class="stat-label">Attempted</span>
+                            </div>
+                        </div>
+                        <div class="stat-card" id="card-total" data-filter="all" role="button" tabindex="0" aria-label="Show all problems">
+                            <span class="stat-icon total" aria-hidden="true">📋</span>
+                            <div class="stat-info">
+                                <span class="stat-value" id="stat-total">400</span>
+                                <span class="stat-label">Total Problems</span>
+                            </div>
+                        </div>
+                        <div class="stat-card streak">
+                            <span class="stat-icon streak-icon" aria-hidden="true">🔥</span>
+                            <div class="stat-info">
+                                <span class="stat-value" id="stat-streak">0</span>
+                                <span class="stat-label">Day Streak</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Problems Table -->
+                    <div class="card problems-card">
+                        <div class="card-header">
+                            <h2 class="card-title" id="current-topic-title">All Problems</h2>
+                            <div class="card-actions">
+                                <span class="results-count" id="results-count">400 problems</span>
+                            </div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="problems-table" role="grid" aria-label="Problems List">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="col-status" aria-sort="none">Status</th>
+                                        <th scope="col" class="col-id">#</th>
+                                        <th scope="col" class="col-problem">Problem</th>
+                                        <th scope="col" class="col-difficulty">Difficulty</th>
+                                        <th scope="col" class="col-topics">Topics</th>
+                                        <th scope="col" class="col-companies">Companies</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="problems-tbody"></tbody>
+                            </table>
+                        </div>
+                        <div class="table-empty" id="table-empty" hidden>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                            <h3>No problems found</h3>
+                            <p>Try adjusting your filters or search query</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
 
-    <!-- Toast Notification -->
-    <div class="toast" id="toast">
-        <span class="toast-icon">✓</span>
-        <span class="toast-message" id="toast-message">Progress saved!</span>
-    </div>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Keyboard Shortcuts Help -->
+    <dialog class="shortcuts-dialog" id="shortcuts-dialog">
+        <div class="shortcuts-content">
+            <h3>Keyboard Shortcuts</h3>
+            <dl class="shortcuts-list">
+                <div><kbd>⌘K</kbd><dt>Focus Search</dt></div>
+                <div><kbd>/</kbd><dt>Focus Search</dt></div>
+                <div><kbd>Esc</kbd><dt>Close Modals / Clear Search</dt></div>
+                <div><kbd>⌘Enter</kbd><dt>Submit Forms</dt></div>
+                <div><kbd>←/→</kbd><dt>Navigate Problems</dt></div>
+            </dl>
+            <button class="btn btn-primary" id="close-shortcuts">Got it</button>
+        </div>
+    </dialog>
 
     <script src="script.js"></script>
 </body>
