@@ -11,20 +11,34 @@ require("./config/passport");
 
 const app = express();
 
+// Trust Render's proxy so req.secure / cookies behave correctly behind HTTPS
+app.set("trust proxy", 1);
+
 // Security
 app.use(
   helmet({
     contentSecurityPolicy: false,
   }),
 );
+
+const allowedOrigins = [
+  "http://localhost:5000",
+  "http://127.0.0.1:5000",
+  "http://localhost:5500",
+  "http://localhost:3000",
+  process.env.FRONTEND_URL, // e.g. https://leetpath-nu.vercel.app
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5000",
-      "http://127.0.0.1:5000",
-      "http://localhost:5500",
-      "http://localhost:3000",
-    ],
+    origin: (origin, callback) => {
+      // allow requests with no origin (e.g. curl, server-to-server, same-origin)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS: " + origin));
+      }
+    },
     credentials: true,
   }),
 );
@@ -36,7 +50,11 @@ app.use(
     secret: process.env.SESSION_SECRET || "leetpath-session-secret",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 },
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 24 * 60 * 60 * 1000,
+    },
   }),
 );
 
