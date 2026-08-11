@@ -662,6 +662,55 @@ async function syncWithLeetCode() {
   }
 }
 
+function toggleFullSyncPanel() {
+  const panel = $("leetcode-full-sync");
+  const btn = $("btn-toggle-full-sync");
+  const isHidden = panel.hidden;
+  panel.hidden = !isHidden;
+  btn.setAttribute("aria-expanded", String(isHidden));
+}
+
+function toggleFullSyncHelp() {
+  $("full-sync-help").hidden = !$("full-sync-help").hidden;
+}
+
+async function runFullSync() {
+  const sessionCookie = $("lc-session-input").value.trim();
+  if (!sessionCookie) {
+    showToast("Paste your LEETCODE_SESSION cookie first", "error");
+    return;
+  }
+  const btn = $("btn-full-sync");
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Syncing...";
+  try {
+    showToast(
+      "Running full history sync — this can take a moment...",
+      "success",
+    );
+    const res = await api(`${API_URL}/api/leetcode/full-sync`, {
+      method: "POST",
+      body: { sessionCookie },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Full sync failed");
+
+    $("lc-session-input").value = "";
+    await loadProblems();
+    updateUI();
+    updateStats();
+    applyFilters();
+    showToast(data.message || "Full sync complete!");
+  } catch (error) {
+    console.error("Full sync error:", error);
+    showToast(error.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+
 // ==================== EXPORT / RESET ====================
 async function exportProgress() {
   try {
@@ -783,6 +832,9 @@ function setupApp() {
   // Dropdown actions
   $("btn-connect-lc").addEventListener("click", connectLeetCodeFull);
   $("btn-sync-lc").addEventListener("click", syncWithLeetCode);
+  $("btn-toggle-full-sync").addEventListener("click", toggleFullSyncPanel);
+  $("btn-full-sync-help").addEventListener("click", toggleFullSyncHelp);
+  $("btn-full-sync").addEventListener("click", runFullSync);
   $("btn-export").addEventListener("click", exportProgress);
   $("btn-reset").addEventListener("click", resetProgress);
   $("btn-logout").addEventListener("click", logout);

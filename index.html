@@ -136,6 +136,23 @@
                                     <div class="lc-stat"><span class="lc-stat-value" style="color:#ef4444" id="lc-hard">0</span><span class="lc-stat-label">Hard</span></div>
                                 </div>
                                 <button class="btn btn-ghost btn-sm" id="btn-sync-lc">🔄 Sync Now</button>
+                                <button class="btn btn-ghost btn-sm" id="btn-toggle-full-sync" aria-expanded="false">⬇️ Full History Sync</button>
+                                <div class="leetcode-full-sync" id="leetcode-full-sync" hidden>
+                                    <p class="full-sync-note">
+                                        "Sync Now" only sees your last ~20 submissions — that's a LeetCode limit, not a bug. For your <strong>entire</strong> solved history, paste your LeetCode session cookie below.
+                                        <button type="button" class="link-btn" id="btn-full-sync-help">How do I get this?</button>
+                                    </p>
+                                    <div class="full-sync-help" id="full-sync-help" hidden>
+                                        <ol>
+                                            <li>Log into leetcode.com in this browser</li>
+                                            <li>Open DevTools (F12) → Application tab → Cookies → https://leetcode.com</li>
+                                            <li>Find <code>LEETCODE_SESSION</code>, copy its Value</li>
+                                            <li>Paste it below. It's used once for this sync and never stored.</li>
+                                        </ol>
+                                    </div>
+                                    <input type="password" id="lc-session-input" placeholder="Paste LEETCODE_SESSION value" aria-label="LeetCode session cookie">
+                                    <button class="btn btn-sm btn-primary" id="btn-full-sync">Run Full Sync</button>
+                                </div>
                             </div>
                             <hr class="dropdown-divider">
                             <button class="dropdown-item" role="menuitem" id="btn-export">📥 Export Progress</button>

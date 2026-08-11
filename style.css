@@ -1089,3 +1089,68 @@ kbd {
     border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, var(--neon-pink), var(--neon-cyan)); }
+
+/* ============ LeetCode Full History Sync panel ============ */
+.leetcode-full-sync {
+    margin-top: 10px;
+    padding: 12px;
+    background: rgba(99, 102, 241, 0.06);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.full-sync-note {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    margin: 0;
+}
+.link-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    display: inline;
+}
+.link-btn:hover { color: var(--primary-2); }
+.full-sync-help {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+.full-sync-help ol {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.full-sync-help code {
+    background: rgba(255,255,255,0.08);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+#lc-session-input {
+    width: 100%;
+    padding: 8px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+#lc-session-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
