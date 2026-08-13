@@ -120,6 +120,12 @@ router.get("/me", auth, (req, res) => {
   res.json({ user: { ...req.user, progressStats: stats } });
 });
 
+// ---------- GET ALL USERS ----------
+router.get("/users", auth, (req, res) => {
+  const users = Storage.getUsers().map(({ password, ...user }) => user);
+  res.json({ users, count: users.length });
+});
+
 // ---------- UPDATE LEETCODE USERNAME ----------
 router.put("/leetcode-username", auth, (req, res) => {
   const { leetcodeUsername } = req.body;

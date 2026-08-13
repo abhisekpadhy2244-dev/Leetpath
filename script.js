@@ -424,14 +424,14 @@ function renderProblems(problems) {
     row.style.animationDelay = `${Math.min(index * 0.03, 0.5)}s`;
     row.innerHTML = `
       <td class="col-status">
-        <span class="status-badge ${p.status}" data-id="${p.id}" role="button" tabindex="0" aria-label="Toggle status for ${escapeHtml(p.name)}">
+        <span class="status-badge ${p.status}" data-id="${p.id}" aria-label="Status: ${formatStatus(p.status)}">
           <span class="status-icon">${getStatusIcon(p.status)}</span>
           <span>${formatStatus(p.status)}</span>
         </span>
       </td>
       <td class="col-id">${p.id}</td>
       <td class="col-problem">
-        <a href="${p.url}" target="_blank" rel="noopener" class="problem-link">${escapeHtml(p.name)}</a>
+        <a href="${p.url}" target="_blank" rel="noopener" class="problem-link" data-id="${p.id}">${escapeHtml(p.name)}</a>
       </td>
       <td class="col-difficulty">
         <span class="difficulty-badge ${p.difficulty.toLowerCase()}">${p.difficulty}</span>
@@ -461,15 +461,11 @@ function renderProblems(problems) {
   });
   tbody.appendChild(fragment);
 
-  // Status cycling
-  tbody.querySelectorAll(".status-badge").forEach((badge) => {
-    const cycle = () => cycleStatus(parseInt(badge.dataset.id), badge);
-    badge.addEventListener("click", cycle);
-    badge.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        cycle();
-      }
+  // Opening a problem marks it "attempted" automatically — status is otherwise
+  // read-only in the UI. "Completed" can only be set by an actual LeetCode sync.
+  tbody.querySelectorAll(".problem-link").forEach((link) => {
+    link.addEventListener("click", () => {
+      markAttemptedOnOpen(parseInt(link.dataset.id));
     });
   });
 }
@@ -485,45 +481,38 @@ function formatStatus(status) {
     .join(" ");
 }
 
-async function cycleStatus(problemId, badgeEl) {
-  const statuses = ["not-attempted", "attempted", "completed"];
-  const current = badgeEl.classList.contains("completed")
-    ? "completed"
-    : badgeEl.classList.contains("attempted")
-      ? "attempted"
-      : "not-attempted";
-  const next = statuses[(statuses.indexOf(current) + 1) % statuses.length];
-
-  badgeEl.style.pointerEvents = "none";
+// Fires when the user clicks a problem link to open it on LeetCode.
+// Only moves not-attempted -> attempted; never touches an already
+// attempted/completed problem, and can never itself mark "completed".
+async function markAttemptedOnOpen(problemId) {
+  const problem = allProblems.find((p) => p.id === problemId);
+  if (!problem || problem.status !== "not-attempted") return;
 
   try {
     const res = await api(
       `${API_URL}/api/progress/problems/${problemId}/status`,
       {
         method: "PUT",
-        body: { status: next },
+        body: { status: "attempted" },
       },
     );
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.message || "Failed to update status");
+    if (!res.ok) return; // silent — this is a background nicety, not critical
+
+    problem.status = "attempted";
+    const badge = document.querySelector(
+      `.status-badge[data-id="${problemId}"]`,
+    );
+    if (badge) {
+      badge.className = "status-badge attempted";
+      badge.querySelector(".status-icon").textContent =
+        getStatusIcon("attempted");
+      badge.querySelector("span:last-child").textContent =
+        formatStatus("attempted");
     }
-
-    const problem = allProblems.find((p) => p.id === problemId);
-    if (problem) problem.status = next;
-
-    badgeEl.className = `status-badge ${next}`;
-    badgeEl.querySelector(".status-icon").textContent = getStatusIcon(next);
-    badgeEl.querySelector("span:last-child").textContent = formatStatus(next);
-
     updateStats();
     updateTopicProgress();
-    showToast(`Marked as ${formatStatus(next)}`);
   } catch (error) {
-    console.error("Update status error:", error);
-    showToast(error.message, "error");
-  } finally {
-    badgeEl.style.pointerEvents = "";
+    console.error("Auto-mark attempted error:", error);
   }
 }
 

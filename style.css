@@ -694,13 +694,12 @@ body.modal-open { overflow: hidden; }
     border-radius: 30px;
     font-size: 0.78rem;
     font-weight: 600;
-    cursor: pointer;
+    cursor: default;
     transition: all 0.2s;
     user-select: none;
     border: 1px solid transparent;
     white-space: nowrap;
 }
-.status-badge:hover { transform: scale(1.04); }
 .status-badge.not-attempted { background: var(--danger-bg); color: var(--danger); border-color: rgba(239, 68, 68, 0.25); }
 .status-badge.attempted { background: var(--warning-bg); color: var(--warning); border-color: rgba(245, 158, 11, 0.25); }
 .status-badge.completed { background: var(--success-bg); color: var(--success); border-color: rgba(34, 197, 94, 0.25); }
