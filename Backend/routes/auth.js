@@ -120,12 +120,6 @@ router.get("/me", auth, (req, res) => {
   res.json({ user: { ...req.user, progressStats: stats } });
 });
 
-// ---------- GET ALL USERS ----------
-router.get("/users", auth, (req, res) => {
-  const users = Storage.getUsers().map(({ password, ...user }) => user);
-  res.json({ users, count: users.length });
-});
-
 // ---------- UPDATE LEETCODE USERNAME ----------
 router.put("/leetcode-username", auth, (req, res) => {
   const { leetcodeUsername } = req.body;
@@ -165,7 +159,8 @@ router.post("/google", async (req, res) => {
 
     if (!user) {
       user = Storage.createUser({
-        username: name?.replace(/\s+/g, "_").toLowerCase() || email.split("@")[0],
+        username:
+          name?.replace(/\s+/g, "_").toLowerCase() || email.split("@")[0],
         email,
         password: "",
         googleId,
@@ -190,6 +185,28 @@ router.post("/google", async (req, res) => {
     console.error("Google login error:", error);
     res.status(400).json({ message: "Invalid Google credential" });
   }
+});
+
+// Simple admin stats endpoint — protected by a secret key, not by login.
+// Usage: GET /api/auth/admin/stats?key=YOUR_ADMIN_KEY
+router.get("/admin/stats", (req, res) => {
+  if (!process.env.ADMIN_KEY || req.query.key !== process.env.ADMIN_KEY) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  const users = Storage.getUsers();
+  const summary = users.map((u) => ({
+    username: u.username,
+    email: u.email,
+    signedUpVia: u.googleId ? "google" : "email",
+    leetcodeConnected: !!u.leetcodeUsername,
+    createdAt: u.createdAt,
+  }));
+
+  res.json({
+    totalUsers: users.length,
+    users: summary,
+  });
 });
 
 module.exports = router;
