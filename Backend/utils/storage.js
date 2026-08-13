@@ -55,6 +55,7 @@ class Storage {
         lastUpdated: null,
       },
       progress: {},
+      activityLog: {}, // { "YYYY-MM-DD": count } — powers the calendar and real streak
       googleId: userData.googleId || null,
       avatar: userData.avatar || null,
       createdAt: new Date().toISOString(),
@@ -129,6 +130,66 @@ class Storage {
 
   static getProblemsByTopic(topic) {
     return this.getProblems().filter((p) => p.topics.includes(topic));
+  }
+
+  // ---- Activity log / streak ----
+
+  // Records one solved problem against a given date (YYYY-MM-DD, server's local date
+  // by default). Used to power the calendar heatmap and the real streak calculation.
+  static recordActivity(userId, dateStr) {
+    const users = this.getUsers();
+    const index = users.findIndex((u) => u.id === userId);
+    if (index === -1) return null;
+    if (!users[index].activityLog) users[index].activityLog = {};
+    users[index].activityLog[dateStr] =
+      (users[index].activityLog[dateStr] || 0) + 1;
+    users[index].updatedAt = new Date().toISOString();
+    this.saveUsers(users);
+    return users[index].activityLog;
+  }
+
+  static getUserActivityLog(userId) {
+    const user = this.findUserById(userId);
+    return user?.activityLog || {};
+  }
+
+  // Current streak = consecutive days with activity, ending today or yesterday
+  // (yesterday still counts as "alive" until today ends, so you don't get
+  // flagged as broken the moment midnight passes if you haven't solved yet today).
+  static computeStreak(activityLog) {
+    const days = Object.keys(activityLog || {}).sort();
+    if (days.length === 0)
+      return { current: 0, longest: 0, solvedToday: false };
+
+    const toDate = (s) => new Date(s + "T00:00:00Z");
+    const oneDay = 24 * 60 * 60 * 1000;
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const solvedToday = !!activityLog[todayStr];
+
+    // Longest streak, scanning all days in order
+    let longest = 1;
+    let run = 1;
+    for (let i = 1; i < days.length; i++) {
+      const diff = (toDate(days[i]) - toDate(days[i - 1])) / oneDay;
+      run = diff === 1 ? run + 1 : 1;
+      longest = Math.max(longest, run);
+    }
+
+    // Current streak: walk backwards from today (or yesterday if nothing today yet)
+    let cursor = new Date(todayStr + "T00:00:00Z");
+    if (!solvedToday) cursor = new Date(cursor.getTime() - oneDay);
+    let current = 0;
+    while (true) {
+      const key = cursor.toISOString().slice(0, 10);
+      if (activityLog[key]) {
+        current++;
+        cursor = new Date(cursor.getTime() - oneDay);
+      } else {
+        break;
+      }
+    }
+
+    return { current, longest, solvedToday };
   }
 }
 

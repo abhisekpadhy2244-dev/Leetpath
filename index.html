@@ -276,6 +276,34 @@
                         </div>
                     </div>
 
+                    <!-- Streak reminder banner (shown only when today's activity is missing) -->
+                    <div class="streak-banner" id="streak-banner" hidden role="alert">
+                        <span class="streak-banner-icon" aria-hidden="true">🔥</span>
+                        <div class="streak-banner-text">
+                            <strong id="streak-banner-title">You haven't solved anything today</strong>
+                            <span id="streak-banner-sub">Solve one problem to keep your streak alive.</span>
+                        </div>
+                        <button class="streak-banner-dismiss" id="streak-banner-dismiss" aria-label="Dismiss for today">✕</button>
+                    </div>
+
+                    <!-- Activity Calendar -->
+                    <div class="card calendar-card">
+                        <div class="card-header">
+                            <h2 class="card-title">Activity</h2>
+                            <span class="calendar-streak-summary" id="calendar-streak-summary"></span>
+                        </div>
+                        <div class="calendar-heatmap" id="calendar-heatmap" role="img" aria-label="Problem-solving activity calendar"></div>
+                        <div class="calendar-legend">
+                            <span>Less</span>
+                            <span class="legend-swatch level-0"></span>
+                            <span class="legend-swatch level-1"></span>
+                            <span class="legend-swatch level-2"></span>
+                            <span class="legend-swatch level-3"></span>
+                            <span class="legend-swatch level-4"></span>
+                            <span>More</span>
+                        </div>
+                    </div>
+
                     <!-- Problems Table -->
                     <div class="card problems-card">
                         <div class="card-header">

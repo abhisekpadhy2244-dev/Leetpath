@@ -25,17 +25,36 @@ router.get("/problems/topic/:topic", auth, (req, res) => {
   res.json(problemsWithProgress);
 });
 
-// Update problem status
+// Update problem status — user-facing endpoint. "Completed" is intentionally
+// NOT allowed here: it can only be set by the LeetCode sync routes, which
+// verify the problem was actually solved on LeetCode. Users can only mark
+// something "attempted" (by opening it) or reset it back to "not-attempted".
 router.put("/problems/:problemId/status", auth, (req, res) => {
   const { problemId } = req.params;
   const { status } = req.body;
 
-  if (!["not-attempted", "attempted", "completed"].includes(status)) {
-    return res.status(400).json({ message: "Invalid status" });
+  if (!["not-attempted", "attempted"].includes(status)) {
+    return res.status(400).json({
+      message:
+        "Invalid status. 'Completed' can only be set by syncing your LeetCode account.",
+    });
   }
 
   const problem = Storage.getProblemById(parseInt(problemId));
   if (!problem) return res.status(404).json({ message: "Problem not found" });
+
+  const user = Storage.findUserById(req.user.id);
+
+  // Never let this route downgrade an already-completed problem.
+  if (user.progress[problemId] === "completed") {
+    const stats = Storage.getUserProgressStats(req.user.id);
+    return res.json({
+      message: "Already completed",
+      problemId,
+      status: "completed",
+      stats,
+    });
+  }
 
   Storage.updateUserProgress(req.user.id, problemId, status);
   const stats = Storage.getUserProgressStats(req.user.id);
@@ -48,9 +67,16 @@ router.get("/stats", auth, (req, res) => {
   res.json(stats);
 });
 
+// Get activity log + real streak (powers the calendar heatmap)
+router.get("/activity", auth, (req, res) => {
+  const log = Storage.getUserActivityLog(req.user.id);
+  const streak = Storage.computeStreak(log);
+  res.json({ activityLog: log, streak });
+});
+
 // Reset progress
 router.post("/reset", auth, (req, res) => {
-  Storage.updateUser(req.user.id, { progress: {} });
+  Storage.updateUser(req.user.id, { progress: {}, activityLog: {} });
   const stats = Storage.getUserProgressStats(req.user.id);
   res.json({ message: "Progress reset", stats });
 });

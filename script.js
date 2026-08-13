@@ -261,7 +261,7 @@ async function initApp() {
   await loadProblems();
   updateUI();
   applyFilters();
-  calculateStreak();
+  await loadActivity();
 }
 
 // ==================== DATA LOADING ====================
@@ -644,6 +644,7 @@ async function syncWithLeetCode() {
     updateUI();
     updateStats();
     applyFilters();
+    await loadActivity();
     showToast(data.message || "Synced!");
   } catch (error) {
     console.error("Sync error:", error);
@@ -741,14 +742,98 @@ async function resetProgress() {
   }
 }
 
-// ==================== STREAK (mock for demo) ====================
-function calculateStreak() {
-  // Count completed problems as a simple proxy, or read from localStorage
-  streak = parseInt(localStorage.getItem("leetpath_streak") || "0");
-  if (allProblems.some((p) => p.status === "completed")) {
-    streak = Math.max(streak, 1);
+// ==================== ACTIVITY / STREAK / CALENDAR ====================
+async function loadActivity() {
+  try {
+    const res = await api(`${API_URL}/api/progress/activity`, { auth: true });
+    if (!res.ok) throw new Error("Failed to load activity");
+    const data = await res.json();
+    streak = data.streak.current;
+    renderCalendar(data.activityLog);
+    renderStreakSummary(data.streak);
+    maybeShowStreakBanner(data.streak);
+  } catch (error) {
+    console.error("loadActivity error:", error);
+    streak = 0;
   }
   updateStats();
+}
+
+function renderStreakSummary(streakData) {
+  const el = $("calendar-streak-summary");
+  if (!el) return;
+  el.textContent = `🔥 ${streakData.current} day streak · best ${streakData.longest}`;
+}
+
+// GitHub-style heatmap: last 18 weeks, Sun-first columns.
+function renderCalendar(activityLog) {
+  const container = $("calendar-heatmap");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const oneDay = 24 * 60 * 60 * 1000;
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+
+  const weeks = 18;
+  const totalDays = weeks * 7;
+  // Align the grid to end on the most recent Saturday so columns are clean weeks.
+  const endOffset = 6 - today.getUTCDay();
+  const gridEnd = new Date(today.getTime() + endOffset * oneDay);
+  const gridStart = new Date(gridEnd.getTime() - (totalDays - 1) * oneDay);
+
+  const maxCount = Math.max(1, ...Object.values(activityLog || {}));
+
+  const grid = document.createElement("div");
+  grid.className = "heatmap-grid";
+
+  for (let i = 0; i < totalDays; i++) {
+    const date = new Date(gridStart.getTime() + i * oneDay);
+    const key = date.toISOString().slice(0, 10);
+    const count = activityLog?.[key] || 0;
+    const isFuture = date > today;
+
+    let level = 0;
+    if (!isFuture && count > 0) {
+      const ratio = count / maxCount;
+      level = ratio >= 0.75 ? 4 : ratio >= 0.5 ? 3 : ratio >= 0.25 ? 2 : 1;
+    }
+
+    const cell = document.createElement("div");
+    cell.className = `heatmap-cell level-${level}${isFuture ? " future" : ""}`;
+    cell.title = isFuture
+      ? ""
+      : `${count} problem${count === 1 ? "" : "s"} on ${key}`;
+    grid.appendChild(cell);
+  }
+
+  container.appendChild(grid);
+}
+
+function maybeShowStreakBanner(streakData) {
+  const banner = $("streak-banner");
+  if (!banner) return;
+
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const dismissedToday =
+    localStorage.getItem("leetpath_banner_dismissed") === todayKey;
+
+  if (streakData.solvedToday || dismissedToday) {
+    banner.hidden = true;
+    return;
+  }
+
+  const title = $("streak-banner-title");
+  const sub = $("streak-banner-sub");
+  if (streakData.current > 0) {
+    title.textContent = `Don't break your ${streakData.current}-day streak!`;
+    sub.textContent =
+      "You haven't solved anything today — sync after solving to keep it alive.";
+  } else {
+    title.textContent = "No streak going yet";
+    sub.textContent = "Solve a problem today and sync to start one.";
+  }
+  banner.hidden = false;
 }
 
 // ==================== TOAST ====================
@@ -824,6 +909,13 @@ function setupApp() {
   $("btn-toggle-full-sync").addEventListener("click", toggleFullSyncPanel);
   $("btn-full-sync-help").addEventListener("click", toggleFullSyncHelp);
   $("btn-full-sync").addEventListener("click", runFullSync);
+  $("streak-banner-dismiss")?.addEventListener("click", () => {
+    localStorage.setItem(
+      "leetpath_banner_dismissed",
+      new Date().toISOString().slice(0, 10),
+    );
+    $("streak-banner").hidden = true;
+  });
   $("btn-export").addEventListener("click", exportProgress);
   $("btn-reset").addEventListener("click", resetProgress);
   $("btn-logout").addEventListener("click", logout);

@@ -111,6 +111,7 @@ router.post("/sync", auth, async (req, res) => {
         recentSubmissionList(username: $username, limit: $limit) {
           title
           statusDisplay
+          timestamp
         }
       }
     `;
@@ -136,6 +137,14 @@ router.post("/sync", auth, async (req, res) => {
         const problem = problems.find((p) => p.name === submission.title);
         if (problem && user.progress[problem.id] !== "completed") {
           Storage.updateUserProgress(req.user.id, problem.id, "completed");
+          // LeetCode's timestamp is unix seconds — convert to the actual
+          // solve date so the calendar reflects reality, not "today".
+          const solvedDate = submission.timestamp
+            ? new Date(parseInt(submission.timestamp) * 1000)
+                .toISOString()
+                .slice(0, 10)
+            : new Date().toISOString().slice(0, 10);
+          Storage.recordActivity(req.user.id, solvedDate);
           updatedCount++;
         }
       }
