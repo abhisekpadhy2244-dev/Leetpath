@@ -18,6 +18,27 @@ let streak = 0;
 // ==================== DOM HELPERS ====================
 const $ = (id) => document.getElementById(id);
 
+// ==================== GLOBAL SAFETY NET ====================
+// Catches any error that would otherwise silently break the page (or leave
+// it in a frozen/half-rendered state) and turns it into a visible, recoverable
+// toast instead. This is a last line of defense, not a replacement for fixing
+// the actual bug — but it means one unexpected error in one interaction can
+// never take down the whole app for the user.
+let lastErrorToastAt = 0;
+function reportUnexpectedError(err) {
+  console.error("Unexpected error:", err);
+  const now = Date.now();
+  if (now - lastErrorToastAt < 2000) return; // avoid a toast storm if errors repeat rapidly
+  lastErrorToastAt = now;
+  try {
+    showToast("Something went wrong — please try again.", "error");
+  } catch {
+    /* showToast itself may not be ready yet during very early load; ignore */
+  }
+}
+window.addEventListener("error", (e) => reportUnexpectedError(e.error || e.message));
+window.addEventListener("unhandledrejection", (e) => reportUnexpectedError(e.reason));
+
 // ==================== INIT ====================
 document.addEventListener("DOMContentLoaded", async () => {
   setupAuth();
@@ -219,6 +240,21 @@ function logout() {
   openAuth();
 }
 
+// Wraps an async click handler so rapid/repeated clicks while the previous
+// call is still in flight are ignored instead of firing concurrent requests.
+function guardAsyncClick(fn) {
+  let running = false;
+  return async (...args) => {
+    if (running) return;
+    running = true;
+    try {
+      await fn(...args);
+    } finally {
+      running = false;
+    }
+  };
+}
+
 function api(url, options = {}) {
   const config = {
     method: options.method || "GET",
@@ -345,6 +381,19 @@ function formatTopicName(topic) {
 }
 
 function applyFilters() {
+  // Coalesce rapid repeated calls (e.g. spam-clicking topics/filters) into
+  // a single render per animation frame instead of stacking up full
+  // 400-row table rebuilds back to back, which is what actually freezes
+  // the page under fast repeated clicks.
+  if (applyFilters._scheduled) return;
+  applyFilters._scheduled = true;
+  requestAnimationFrame(() => {
+    applyFilters._scheduled = false;
+    runFilters();
+  });
+}
+
+function runFilters() {
   try {
     const statusFilter = $("filter-status").value;
     const difficultyFilter = $("filter-difficulty").value;
@@ -484,9 +533,13 @@ function formatStatus(status) {
 // Fires when the user clicks a problem link to open it on LeetCode.
 // Only moves not-attempted -> attempted; never touches an already
 // attempted/completed problem, and can never itself mark "completed".
+const markingInFlight = new Set();
+
 async function markAttemptedOnOpen(problemId) {
   const problem = allProblems.find((p) => p.id === problemId);
   if (!problem || problem.status !== "not-attempted") return;
+  if (markingInFlight.has(problemId)) return; // already in progress, ignore repeat clicks
+  markingInFlight.add(problemId);
 
   try {
     const res = await api(
@@ -499,20 +552,18 @@ async function markAttemptedOnOpen(problemId) {
     if (!res.ok) return; // silent — this is a background nicety, not critical
 
     problem.status = "attempted";
-    const badge = document.querySelector(
-      `.status-badge[data-id="${problemId}"]`,
-    );
+    const badge = document.querySelector(`.status-badge[data-id="${problemId}"]`);
     if (badge) {
       badge.className = "status-badge attempted";
-      badge.querySelector(".status-icon").textContent =
-        getStatusIcon("attempted");
-      badge.querySelector("span:last-child").textContent =
-        formatStatus("attempted");
+      badge.querySelector(".status-icon").textContent = getStatusIcon("attempted");
+      badge.querySelector("span:last-child").textContent = formatStatus("attempted");
     }
     updateStats();
     updateTopicProgress();
   } catch (error) {
     console.error("Auto-mark attempted error:", error);
+  } finally {
+    markingInFlight.delete(problemId);
   }
 }
 
@@ -634,6 +685,10 @@ async function connectLeetCode() {
 }
 
 async function syncWithLeetCode() {
+  const btn = $("btn-sync-lc");
+  btn.disabled = true;
+  const originalText = btn.textContent;
+  btn.textContent = "🔄 Syncing...";
   try {
     showToast("Syncing with LeetCode...", "success");
     const res = await api(`${API_URL}/api/leetcode/sync`, { method: "POST" });
@@ -649,6 +704,9 @@ async function syncWithLeetCode() {
   } catch (error) {
     console.error("Sync error:", error);
     showToast(error.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
   }
 }
 
@@ -675,10 +733,7 @@ async function runFullSync() {
   btn.disabled = true;
   btn.textContent = "Syncing...";
   try {
-    showToast(
-      "Running full history sync — this can take a moment...",
-      "success",
-    );
+    showToast("Running full history sync — this can take a moment...", "success");
     const res = await api(`${API_URL}/api/leetcode/full-sync`, {
       method: "POST",
       body: { sessionCookie },
@@ -703,6 +758,8 @@ async function runFullSync() {
 
 // ==================== EXPORT / RESET ====================
 async function exportProgress() {
+  const btn = $("btn-export");
+  btn.disabled = true;
   try {
     const res = await api(`${API_URL}/api/progress/export`);
     const data = await res.json();
@@ -721,12 +778,16 @@ async function exportProgress() {
   } catch (error) {
     console.error("Export error:", error);
     showToast(error.message, "error");
+  } finally {
+    btn.disabled = false;
   }
 }
 
 async function resetProgress() {
   if (!confirm("Reset ALL your progress? This cannot be undone.")) return;
 
+  const btn = $("btn-reset");
+  btn.disabled = true;
   try {
     const res = await api(`${API_URL}/api/progress/reset`, { method: "POST" });
     const data = await res.json();
@@ -735,10 +796,13 @@ async function resetProgress() {
     await loadProblems();
     updateStats();
     applyFilters();
+    await loadActivity();
     showToast("Progress reset!");
   } catch (error) {
     console.error("Reset error:", error);
     showToast(error.message, "error");
+  } finally {
+    btn.disabled = false;
   }
 }
 
@@ -815,8 +879,7 @@ function maybeShowStreakBanner(streakData) {
   if (!banner) return;
 
   const todayKey = new Date().toISOString().slice(0, 10);
-  const dismissedToday =
-    localStorage.getItem("leetpath_banner_dismissed") === todayKey;
+  const dismissedToday = localStorage.getItem("leetpath_banner_dismissed") === todayKey;
 
   if (streakData.solvedToday || dismissedToday) {
     banner.hidden = true;
@@ -827,8 +890,7 @@ function maybeShowStreakBanner(streakData) {
   const sub = $("streak-banner-sub");
   if (streakData.current > 0) {
     title.textContent = `Don't break your ${streakData.current}-day streak!`;
-    sub.textContent =
-      "You haven't solved anything today — sync after solving to keep it alive.";
+    sub.textContent = "You haven't solved anything today — sync after solving to keep it alive.";
   } else {
     title.textContent = "No streak going yet";
     sub.textContent = "Solve a problem today and sync to start one.";
@@ -903,12 +965,13 @@ function setupApp() {
     }
   });
 
-  // Dropdown actions
-  $("btn-connect-lc").addEventListener("click", connectLeetCodeFull);
-  $("btn-sync-lc").addEventListener("click", syncWithLeetCode);
+  // Dropdown actions — guarded so rapid/repeated clicks can't fire
+  // concurrent requests while the previous one is still running.
+  $("btn-connect-lc").addEventListener("click", guardAsyncClick(connectLeetCodeFull));
+  $("btn-sync-lc").addEventListener("click", guardAsyncClick(syncWithLeetCode));
   $("btn-toggle-full-sync").addEventListener("click", toggleFullSyncPanel);
   $("btn-full-sync-help").addEventListener("click", toggleFullSyncHelp);
-  $("btn-full-sync").addEventListener("click", runFullSync);
+  $("btn-full-sync").addEventListener("click", guardAsyncClick(runFullSync));
   $("streak-banner-dismiss")?.addEventListener("click", () => {
     localStorage.setItem(
       "leetpath_banner_dismissed",
@@ -916,14 +979,18 @@ function setupApp() {
     );
     $("streak-banner").hidden = true;
   });
-  $("btn-export").addEventListener("click", exportProgress);
-  $("btn-reset").addEventListener("click", resetProgress);
+  $("btn-export").addEventListener("click", guardAsyncClick(exportProgress));
+  $("btn-reset").addEventListener("click", guardAsyncClick(resetProgress));
   $("btn-logout").addEventListener("click", logout);
 
   // Filters & search
   $("filter-status").addEventListener("change", applyFilters);
   $("filter-difficulty").addEventListener("change", applyFilters);
-  $("global-search").addEventListener("input", applyFilters);
+  let searchDebounce;
+  $("global-search").addEventListener("input", () => {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(applyFilters, 200);
+  });
 
   // Clickable stat cards -> filter by status
   document.querySelectorAll(".stat-card[data-filter]").forEach((card) => {
