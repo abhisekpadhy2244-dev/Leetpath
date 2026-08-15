@@ -319,35 +319,39 @@ async function loadProblems() {
 
 // ==================== RENDERING ====================
 function renderTopics() {
-  const topicCounts = {};
-  for (const p of allProblems) {
-    for (const t of p.topics || []) {
-      topicCounts[t] = (topicCounts[t] || 0) + 1;
+  try {
+    const topicCounts = {};
+    for (const p of allProblems) {
+      for (const t of p.topics || []) {
+        topicCounts[t] = (topicCounts[t] || 0) + 1;
+      }
     }
+
+    const list = $("topic-list");
+    list.innerHTML = "";
+
+    const allItem = createTopicItem(
+      "All Topics",
+      allProblems.length,
+      "all",
+      currentTopic === "all",
+    );
+    list.appendChild(allItem);
+
+    Object.entries(topicCounts)
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([topic, count]) => {
+        const item = createTopicItem(
+          formatTopicName(topic),
+          count,
+          topic,
+          topic === currentTopic,
+        );
+        list.appendChild(item);
+      });
+  } catch (error) {
+    reportUnexpectedError(error);
   }
-
-  const list = $("topic-list");
-  list.innerHTML = "";
-
-  const allItem = createTopicItem(
-    "All Topics",
-    allProblems.length,
-    "all",
-    currentTopic === "all",
-  );
-  list.appendChild(allItem);
-
-  Object.entries(topicCounts)
-    .sort((a, b) => b[1] - a[1])
-    .forEach(([topic, count]) => {
-      const item = createTopicItem(
-        formatTopicName(topic),
-        count,
-        topic,
-        topic === currentTopic,
-      );
-      list.appendChild(item);
-    });
 }
 
 function createTopicItem(name, count, topic, isActive) {
@@ -569,84 +573,100 @@ async function markAttemptedOnOpen(problemId) {
 
 // ==================== STATS & PROGRESS ====================
 function updateStats() {
-  const completed = allProblems.filter((p) => p.status === "completed").length;
-  const attempted = allProblems.filter((p) => p.status === "attempted").length;
-  const total = allProblems.length;
-  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+  try {
+    const completed = allProblems.filter((p) => p.status === "completed").length;
+    const attempted = allProblems.filter((p) => p.status === "attempted").length;
+    const total = allProblems.length;
+    const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-  $("stat-completed").textContent = completed;
-  $("stat-attempted").textContent = attempted;
-  $("stat-total").textContent = total;
-  $("stat-streak").textContent = streak;
+    $("stat-completed").textContent = completed;
+    $("stat-attempted").textContent = attempted;
+    $("stat-total").textContent = total;
+    $("stat-streak").textContent = streak;
 
-  $("overview-percent").textContent = percent + "%";
-  $("overview-fraction").textContent = `${completed} / ${total}`;
-  const circumference = 326.7;
-  $("overview-ring").style.strokeDashoffset =
-    circumference * (1 - percent / 100);
-  $("overview-bar").style.width = percent + "%";
+    $("overview-percent").textContent = percent + "%";
+    $("overview-fraction").textContent = `${completed} / ${total}`;
+    const circumference = 326.7;
+    $("overview-ring").style.strokeDashoffset =
+      circumference * (1 - percent / 100);
+    $("overview-bar").style.width = percent + "%";
 
-  $("bp-completed").textContent = completed;
-  $("bp-attempted").textContent = attempted;
-  $("bp-remaining").textContent = total - completed - attempted;
-  $("overview-title").textContent =
-    currentTopic === "all" ? "All Problems" : formatTopicName(currentTopic);
+    $("bp-completed").textContent = completed;
+    $("bp-attempted").textContent = attempted;
+    $("bp-remaining").textContent = total - completed - attempted;
+    $("overview-title").textContent =
+      currentTopic === "all" ? "All Problems" : formatTopicName(currentTopic);
+  } catch (error) {
+    reportUnexpectedError(error);
+  }
 }
 
 function updateTopicProgress(filteredCount) {
-  const topicProblems =
-    currentTopic === "all"
-      ? allProblems
-      : allProblems.filter((p) => p.topics.includes(currentTopic));
-  const completed = topicProblems.filter(
-    (p) => p.status === "completed",
-  ).length;
-  const total = topicProblems.length;
-  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+  try {
+    const topicProblems =
+      currentTopic === "all"
+        ? allProblems
+        : allProblems.filter((p) => p.topics.includes(currentTopic));
+    const completed = topicProblems.filter(
+      (p) => p.status === "completed",
+    ).length;
+    const total = topicProblems.length;
+    const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-  $("current-topic-title").textContent =
-    currentTopic === "all" ? "All Problems" : formatTopicName(currentTopic);
-  if (typeof filteredCount === "number") {
-    $("results-count").textContent =
-      `${filteredCount} problem${filteredCount !== 1 ? "s" : ""}`;
+    $("current-topic-title").textContent =
+      currentTopic === "all" ? "All Problems" : formatTopicName(currentTopic);
+    if (typeof filteredCount === "number") {
+      $("results-count").textContent =
+        `${filteredCount} problem${filteredCount !== 1 ? "s" : ""}`;
+    }
+  } catch (error) {
+    reportUnexpectedError(error);
   }
 }
 
 // ==================== USER UI ====================
 function updateUI() {
   if (!currentUser) return;
-  const avatarEl = $("user-avatar");
-  const dropdownAvatar = $("dropdown-avatar");
-  $("dropdown-name").textContent = currentUser.username;
-  $("dropdown-email").textContent = currentUser.email;
+  try {
+    const avatarEl = $("user-avatar");
+    const dropdownAvatar = $("dropdown-avatar");
+    $("dropdown-name").textContent = currentUser.username;
+    $("dropdown-email").textContent = currentUser.email;
 
-  if (currentUser.avatar) {
-    setAvatar(avatarEl, currentUser.avatar);
-    setAvatar(dropdownAvatar, currentUser.avatar);
-  } else {
-    const initials = (currentUser.username || "?").charAt(0).toUpperCase();
-    avatarEl.textContent = initials;
-    avatarEl.classList.add("initial");
-    avatarEl.style.backgroundImage = "";
-    dropdownAvatar.textContent = initials;
-    dropdownAvatar.classList.add("initial");
-    dropdownAvatar.style.backgroundImage = "";
-  }
+    if (currentUser.avatar) {
+      setAvatar(avatarEl, currentUser.avatar);
+      setAvatar(dropdownAvatar, currentUser.avatar);
+    } else {
+      const initials = (currentUser.username || "?").charAt(0).toUpperCase();
+      avatarEl.textContent = initials;
+      avatarEl.classList.add("initial");
+      avatarEl.style.backgroundImage = "";
+      dropdownAvatar.textContent = initials;
+      dropdownAvatar.classList.add("initial");
+      dropdownAvatar.style.backgroundImage = "";
+    }
 
-  if (currentUser.leetcodeUsername) {
-    $("lc-username-input").value = currentUser.leetcodeUsername;
-    $("leetcode-stats").hidden = false;
-    if (currentUser.leetcodeData) updateLeetCodeStats(currentUser.leetcodeData);
-  } else {
-    $("leetcode-stats").hidden = true;
+    if (currentUser.leetcodeUsername) {
+      $("lc-username-input").value = currentUser.leetcodeUsername;
+      $("leetcode-stats").hidden = false;
+      if (currentUser.leetcodeData) updateLeetCodeStats(currentUser.leetcodeData);
+    } else {
+      $("leetcode-stats").hidden = true;
+    }
+  } catch (error) {
+    reportUnexpectedError(error);
   }
 }
 
 function updateLeetCodeStats(data) {
-  $("lc-total").textContent = data.totalSolved || 0;
-  $("lc-easy").textContent = data.easySolved || 0;
-  $("lc-medium").textContent = data.mediumSolved || 0;
-  $("lc-hard").textContent = data.hardSolved || 0;
+  try {
+    $("lc-total").textContent = data.totalSolved || 0;
+    $("lc-easy").textContent = data.easySolved || 0;
+    $("lc-medium").textContent = data.mediumSolved || 0;
+    $("lc-hard").textContent = data.hardSolved || 0;
+  } catch (error) {
+    reportUnexpectedError(error);
+  }
 }
 
 // ==================== LEETCODE INTEGRATION ====================
@@ -813,9 +833,23 @@ async function loadActivity() {
     if (!res.ok) throw new Error("Failed to load activity");
     const data = await res.json();
     streak = data.streak.current;
-    renderCalendar(data.activityLog);
-    renderStreakSummary(data.streak);
-    maybeShowStreakBanner(data.streak);
+
+    // Each sub-section is independent — one failing doesn't stop the others.
+    try {
+      renderCalendar(data.activityLog);
+    } catch (error) {
+      reportUnexpectedError(error);
+    }
+    try {
+      renderStreakSummary(data.streak);
+    } catch (error) {
+      reportUnexpectedError(error);
+    }
+    try {
+      maybeShowStreakBanner(data.streak);
+    } catch (error) {
+      reportUnexpectedError(error);
+    }
   } catch (error) {
     console.error("loadActivity error:", error);
     streak = 0;
