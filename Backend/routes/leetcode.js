@@ -130,12 +130,15 @@ router.post("/sync", auth, async (req, res) => {
 
     const submissions = response.data.data?.recentSubmissionList || [];
     let updatedCount = 0;
+    let attemptedFromSync = 0;
     const problems = Storage.getProblems();
 
     for (const submission of submissions) {
+      const problem = problems.find((p) => p.name === submission.title);
+      if (!problem) continue;
+
       if (submission.statusDisplay === "Accepted") {
-        const problem = problems.find((p) => p.name === submission.title);
-        if (problem && user.progress[problem.id] !== "completed") {
+        if (user.progress[problem.id] !== "completed") {
           Storage.updateUserProgress(req.user.id, problem.id, "completed");
           // LeetCode's timestamp is unix seconds — convert to the actual
           // solve date so the calendar reflects reality, not "today".
@@ -147,6 +150,17 @@ router.post("/sync", auth, async (req, res) => {
           Storage.recordActivity(req.user.id, solvedDate);
           updatedCount++;
         }
+      } else {
+        // Any other recent submission (Wrong Answer, TLE, Runtime Error, etc.)
+        // still counts as a real attempt — don't leave it as "not-attempted"
+        // just because it wasn't accepted yet. Never downgrade a completed one.
+        if (
+          !user.progress[problem.id] ||
+          user.progress[problem.id] === "not-attempted"
+        ) {
+          Storage.updateUserProgress(req.user.id, problem.id, "attempted");
+          attemptedFromSync++;
+        }
       }
     }
 
@@ -156,7 +170,7 @@ router.post("/sync", auth, async (req, res) => {
     });
 
     res.json({
-      message: `Synced ${updatedCount} new completed problems`,
+      message: `Synced: ${updatedCount} newly completed, ${attemptedFromSync} newly attempted`,
       stats,
       progressStats: Storage.getUserProgressStats(req.user.id),
     });
