@@ -8,7 +8,7 @@
     <meta name="description" content="Track your DSA journey with LeetPath. 400+ curated problems, progress tracking, LeetCode sync, and more.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -29,7 +29,7 @@
             <div class="modal-header">
                 <div class="logo-icon-large">⚡</div>
                 <h1 id="auth-title">Welcome to LeetPath</h1>
-                <p class="modal-subtitle">Track your DSA mastery journey</p>
+                <p class="modal-subtitle" id="modal-subtitle">Track your DSA mastery journey</p>
             </div>
 
             <!-- Auth Tabs -->
@@ -109,6 +109,10 @@
                         <input type="search" id="global-search" placeholder="Search problems, topics, companies..." aria-label="Search problems">
                         <kbd class="search-shortcut">⌘K</kbd>
                     </div>
+
+                    <!-- Guest CTAs — shown only when logged out -->
+                    <button class="btn-guest-connect" id="btn-connect-lc-header" hidden>Connect LeetCode</button>
+                    <button class="btn-guest-signin" id="btn-signin-header" hidden>Sign In</button>
 
                     <!-- User Menu -->
                     <div class="user-menu" id="user-menu">
@@ -287,7 +291,7 @@
                     </div>
 
                     <!-- Activity Calendar -->
-                    <div class="card calendar-card">
+                    <div class="card calendar-card" id="calendar-card">
                         <div class="card-header">
                             <h2 class="card-title">Activity</h2>
                             <span class="calendar-streak-summary" id="calendar-streak-summary"></span>

@@ -36,8 +36,12 @@ function reportUnexpectedError(err) {
     /* showToast itself may not be ready yet during very early load; ignore */
   }
 }
-window.addEventListener("error", (e) => reportUnexpectedError(e.error || e.message));
-window.addEventListener("unhandledrejection", (e) => reportUnexpectedError(e.reason));
+window.addEventListener("error", (e) =>
+  reportUnexpectedError(e.error || e.message),
+);
+window.addEventListener("unhandledrejection", (e) =>
+  reportUnexpectedError(e.reason),
+);
 
 // ==================== INIT ====================
 document.addEventListener("DOMContentLoaded", async () => {
@@ -52,13 +56,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (authToken) {
     const restored = await hydrateCurrentUser();
-    if (restored) {
-      initApp();
-      return;
+    if (!restored) {
+      // token was stale/invalid — clear it and continue as a guest
+      authToken = null;
+      currentUser = null;
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("user");
     }
   }
 
-  openAuth();
+  // The site is always browsable, logged in or not. Signing in is only
+  // ever prompted when the person tries to do something that needs an
+  // account — solving a problem or connecting LeetCode.
+  initApp();
 });
 
 // ==================== AUTH ====================
@@ -276,15 +286,20 @@ function api(url, options = {}) {
 }
 
 // ==================== UI STATE ====================
-function openAuth() {
+function openAuth(reason) {
+  const subtitle = $("modal-subtitle");
+  if (subtitle) {
+    subtitle.textContent = reason || "Track your DSA mastery journey";
+  }
   $("auth-modal").classList.add("show");
-  $("app-shell").hidden = true;
   document.body.classList.add("modal-open");
 }
 
 function closeAuth() {
   $("auth-modal").classList.remove("show");
   document.body.classList.remove("modal-open");
+  const subtitle = $("modal-subtitle");
+  if (subtitle) subtitle.textContent = "Track your DSA mastery journey";
 }
 
 function showApp() {
@@ -297,7 +312,26 @@ async function initApp() {
   await loadProblems();
   updateUI();
   applyFilters();
-  await loadActivity();
+  if (currentUser) {
+    await loadActivity();
+  } else {
+    renderGuestState();
+  }
+}
+
+// Shown when browsing without an account — hides personal widgets that
+// have nothing to show yet, and points people at the sign-in CTA instead.
+function renderGuestState() {
+  try {
+    const banner = $("streak-banner");
+    if (banner) banner.hidden = true;
+    const calendarCard =
+      $("calendar-card") || $("calendar-heatmap")?.closest(".card");
+    if (calendarCard) calendarCard.hidden = true;
+    updateStats();
+  } catch (error) {
+    reportUnexpectedError(error);
+  }
 }
 
 // ==================== DATA LOADING ====================
@@ -516,8 +550,14 @@ function renderProblems(problems) {
 
   // Opening a problem marks it "attempted" automatically — status is otherwise
   // read-only in the UI. "Completed" can only be set by an actual LeetCode sync.
+  // Guests get prompted to sign in instead of being let straight through.
   tbody.querySelectorAll(".problem-link").forEach((link) => {
-    link.addEventListener("click", () => {
+    link.addEventListener("click", (e) => {
+      if (!currentUser) {
+        e.preventDefault();
+        openAuth("Sign in to start tracking your progress before you solve.");
+        return;
+      }
       markAttemptedOnOpen(parseInt(link.dataset.id));
     });
   });
@@ -556,11 +596,15 @@ async function markAttemptedOnOpen(problemId) {
     if (!res.ok) return; // silent — this is a background nicety, not critical
 
     problem.status = "attempted";
-    const badge = document.querySelector(`.status-badge[data-id="${problemId}"]`);
+    const badge = document.querySelector(
+      `.status-badge[data-id="${problemId}"]`,
+    );
     if (badge) {
       badge.className = "status-badge attempted";
-      badge.querySelector(".status-icon").textContent = getStatusIcon("attempted");
-      badge.querySelector("span:last-child").textContent = formatStatus("attempted");
+      badge.querySelector(".status-icon").textContent =
+        getStatusIcon("attempted");
+      badge.querySelector("span:last-child").textContent =
+        formatStatus("attempted");
     }
     updateStats();
     updateTopicProgress();
@@ -574,8 +618,12 @@ async function markAttemptedOnOpen(problemId) {
 // ==================== STATS & PROGRESS ====================
 function updateStats() {
   try {
-    const completed = allProblems.filter((p) => p.status === "completed").length;
-    const attempted = allProblems.filter((p) => p.status === "attempted").length;
+    const completed = allProblems.filter(
+      (p) => p.status === "completed",
+    ).length;
+    const attempted = allProblems.filter(
+      (p) => p.status === "attempted",
+    ).length;
     const total = allProblems.length;
     const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
@@ -626,7 +674,18 @@ function updateTopicProgress(filteredCount) {
 
 // ==================== USER UI ====================
 function updateUI() {
-  if (!currentUser) return;
+  const signinBtn = $("btn-signin-header");
+  const connectBtn = $("btn-connect-lc-header");
+  const userMenu = $("user-menu");
+  if (!currentUser) {
+    if (signinBtn) signinBtn.hidden = false;
+    if (connectBtn) connectBtn.hidden = false;
+    if (userMenu) userMenu.hidden = true;
+    return;
+  }
+  if (signinBtn) signinBtn.hidden = true;
+  if (connectBtn) connectBtn.hidden = true;
+  if (userMenu) userMenu.hidden = false;
   try {
     const avatarEl = $("user-avatar");
     const dropdownAvatar = $("dropdown-avatar");
@@ -649,7 +708,8 @@ function updateUI() {
     if (currentUser.leetcodeUsername) {
       $("lc-username-input").value = currentUser.leetcodeUsername;
       $("leetcode-stats").hidden = false;
-      if (currentUser.leetcodeData) updateLeetCodeStats(currentUser.leetcodeData);
+      if (currentUser.leetcodeData)
+        updateLeetCodeStats(currentUser.leetcodeData);
     } else {
       $("leetcode-stats").hidden = true;
     }
@@ -753,7 +813,10 @@ async function runFullSync() {
   btn.disabled = true;
   btn.textContent = "Syncing...";
   try {
-    showToast("Running full history sync — this can take a moment...", "success");
+    showToast(
+      "Running full history sync — this can take a moment...",
+      "success",
+    );
     const res = await api(`${API_URL}/api/leetcode/full-sync`, {
       method: "POST",
       body: { sessionCookie },
@@ -913,7 +976,8 @@ function maybeShowStreakBanner(streakData) {
   if (!banner) return;
 
   const todayKey = new Date().toISOString().slice(0, 10);
-  const dismissedToday = localStorage.getItem("leetpath_banner_dismissed") === todayKey;
+  const dismissedToday =
+    localStorage.getItem("leetpath_banner_dismissed") === todayKey;
 
   if (streakData.solvedToday || dismissedToday) {
     banner.hidden = true;
@@ -924,7 +988,8 @@ function maybeShowStreakBanner(streakData) {
   const sub = $("streak-banner-sub");
   if (streakData.current > 0) {
     title.textContent = `Don't break your ${streakData.current}-day streak!`;
-    sub.textContent = "You haven't solved anything today — sync after solving to keep it alive.";
+    sub.textContent =
+      "You haven't solved anything today — sync after solving to keep it alive.";
   } else {
     title.textContent = "No streak going yet";
     sub.textContent = "Solve a problem today and sync to start one.";
@@ -987,6 +1052,14 @@ function setAvatar(el, url) {
 
 // ==================== GLOBAL SETUP ====================
 function setupApp() {
+  // Guest CTAs — only visible when logged out
+  $("btn-signin-header")?.addEventListener("click", () => openAuth());
+  $("btn-connect-lc-header")?.addEventListener("click", () =>
+    openAuth(
+      "Sign in first, then connect your LeetCode account to sync your progress.",
+    ),
+  );
+
   // User menu toggle
   const avatarBtn = $("user-avatar-btn");
   avatarBtn.addEventListener("click", (e) => {
@@ -1001,7 +1074,10 @@ function setupApp() {
 
   // Dropdown actions — guarded so rapid/repeated clicks can't fire
   // concurrent requests while the previous one is still running.
-  $("btn-connect-lc").addEventListener("click", guardAsyncClick(connectLeetCodeFull));
+  $("btn-connect-lc").addEventListener(
+    "click",
+    guardAsyncClick(connectLeetCodeFull),
+  );
   $("btn-sync-lc").addEventListener("click", guardAsyncClick(syncWithLeetCode));
   $("btn-toggle-full-sync").addEventListener("click", toggleFullSyncPanel);
   $("btn-full-sync-help").addEventListener("click", toggleFullSyncHelp);
