@@ -434,12 +434,40 @@ svg { display: block; }
 .filter-group:last-child { margin-bottom: 0; }
 .filter-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
 .filter-group select {
-  background: var(--surface-ghost);
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%2362666d' stroke-width='2' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 12px 12px;
+  background-color: var(--surface-elevated);
   border: 0.5px solid var(--border);
   border-radius: var(--radius);
   color: var(--text-primary);
   font-size: 13px;
-  padding: 8px 10px;
+  padding: 8px 32px 8px 14px;
+  min-width: 180px;
+}
+.filter-group select::-ms-expand { display: none; }
+.filter-group select:focus {
+  outline: none;
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-focus);
+}
+.filter-group select:hover {
+  border-color: var(--border-strong);
+}
+
+/* WebKit/Blink option styling - limited but helps */
+.filter-group select option {
+  background-color: var(--surface-elevated);
+  color: var(--text-primary);
+  padding: 8px 12px;
+}
+.filter-group select option:checked {
+  background-color: var(--cta);
+  color: var(--cta-text);
 }
 
 /* ============ Streak banner ============ */
