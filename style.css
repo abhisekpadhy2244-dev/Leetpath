@@ -5,6 +5,8 @@
    ============================================================ */
 
 :root {
+  color-scheme: dark;
+
   /* Colors — exact tokens from variables.css */
   --color-void: #08090a;
   --color-carbon: #0f1011;
@@ -134,8 +136,11 @@ svg { display: block; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sp-24);
+  gap: var(--sp-16);
+  min-width: 0; /* allow flex children to actually shrink instead of overflowing */
 }
+.logo { flex-shrink: 0; }
+.top-actions { flex-shrink: 0; }
 .main-content { max-width: 1440px; margin: 0 auto; padding: var(--sp-24); }
 .layout-grid {
   display: grid;
@@ -174,6 +179,8 @@ svg { display: block; }
   gap: var(--sp-8);
   width: 360px;
   max-width: 40vw;
+  min-width: 0;
+  flex-shrink: 1;
   padding: 8px 12px;
   background: var(--surface-ghost);
   border: 0.5px solid var(--border);
@@ -242,6 +249,9 @@ svg { display: block; }
   top: calc(100% + 8px);
   right: 0;
   width: 300px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
   background: var(--surface-elevated);
   border: 0.5px solid var(--border);
   border-radius: var(--radius-lg);
@@ -648,10 +658,11 @@ svg { display: block; }
 .modal-footer a { color: var(--text-secondary); text-decoration: underline; text-decoration-color: var(--border-strong); }
 
 /* ============ LeetCode connect / sync panels ============ */
-.leetcode-connect { display: flex; gap: var(--sp-8); margin-bottom: var(--sp-12); }
-.leetcode-connect input { flex: 1; }
-.leetcode-stats { display: flex; gap: var(--sp-8); margin-bottom: var(--sp-12); }
-.lc-stat { flex: 1; text-align: center; background: var(--surface-ghost); border: 0.5px solid var(--border); border-radius: var(--radius); padding: var(--sp-8); }
+.leetcode-connect { display: flex; align-items: stretch; gap: var(--sp-8); margin-bottom: var(--sp-12); }
+.leetcode-connect input { flex: 1; min-width: 0; }
+.leetcode-connect .btn { flex-shrink: 0; padding-top: 0; padding-bottom: 0; }
+.leetcode-stats { display: flex; gap: var(--sp-8); margin-bottom: var(--sp-12); flex-wrap: wrap; }
+.lc-stat { flex: 1 1 60px; min-width: 60px; text-align: center; background: var(--surface-ghost); border: 0.5px solid var(--border); border-radius: var(--radius); padding: var(--sp-8); }
 .lc-stat-value { display: block; font-size: 16px; font-weight: 590; color: var(--text-heading); font-family: var(--font-mono); }
 .lc-stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
 

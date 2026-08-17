@@ -784,10 +784,25 @@ async function syncWithLeetCode() {
   btn.textContent = "🔄 Syncing...";
   try {
     showToast("Syncing with LeetCode...", "success");
-    const res = await api(`${API_URL}/api/leetcode/sync`, { method: "POST" });
+    // Send session cookie from input if user pasted one (will be saved server-side)
+    const sessionCookie = $("lc-session-input")?.value?.trim();
+    const body = sessionCookie ? { sessionCookie } : {};
+    const res = await api(`${API_URL}/api/leetcode/sync`, {
+      method: "POST",
+      body,
+    });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Sync failed");
 
+    // Clear input if a new cookie was used (it's now saved server-side)
+    if (sessionCookie) {
+      $("lc-session-input").value = "";
+      // Update local user object to reflect saved session
+      if (currentUser) {
+        currentUser.leetcodeSessionCookie = sessionCookie;
+        localStorage.setItem("user", JSON.stringify(currentUser));
+      }
+    }
     await loadProblems();
     updateUI();
     updateStats();
@@ -839,6 +854,11 @@ async function runFullSync() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Full sync failed");
 
+    // Update local user object if a new cookie was provided
+    if (sessionCookie && currentUser) {
+      currentUser.leetcodeSessionCookie = sessionCookie;
+      localStorage.setItem("user", JSON.stringify(currentUser));
+    }
     // Only clear input if user entered a new cookie (not using saved one)
     if (sessionCookie) {
       $("lc-session-input").value = "";
