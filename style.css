@@ -661,6 +661,29 @@ svg { display: block; }
 .full-sync-help { background: var(--surface-elevated); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 10px 12px; font-size: 11px; color: var(--text-muted); }
 .full-sync-help ol { padding-left: 16px; display: flex; flex-direction: column; gap: 4px; }
 .full-sync-help code { font-family: var(--font-mono); background: var(--surface-pill); padding: 1px 5px; border-radius: 3px; font-size: 10px; }
+
+.session-saved-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 510;
+  color: var(--success);
+  background: var(--success-bg);
+  padding: 4px 8px;
+  border-radius: var(--radius-badge);
+}
+#saved-session-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: var(--sp-8);
+  padding: var(--sp-8);
+  background: var(--success-bg);
+  border: 0.5px solid var(--success);
+  border-radius: var(--radius);
+}
+
 #lc-session-input, .leetcode-connect input {
   background: var(--surface-ghost);
   border: 0.5px solid var(--border);

@@ -97,6 +97,7 @@ router.post("/verify", auth, async (req, res) => {
 });
 
 // Quick sync — only sees your last ~20 submissions (LeetCode's public API limit)
+// If session cookie is saved, also performs full history sync
 router.post("/sync", auth, async (req, res) => {
   try {
     const user = Storage.findUserById(req.user.id);
@@ -106,6 +107,7 @@ router.post("/sync", auth, async (req, res) => {
         .json({ message: "Please connect your LeetCode account first" });
     }
 
+    // First, do the quick sync (recent submissions)
     const query = `
       query recentSubmissions($username: String!, $limit: Int!) {
         recentSubmissionList(username: $username, limit: $limit) {
@@ -164,13 +166,71 @@ router.post("/sync", auth, async (req, res) => {
       }
     }
 
+    // If we have a saved session cookie, also do full history sync
+    let completedCount = 0;
+    let attemptedCount = 0;
+    let fullSyncDone = false;
+
+    if (user.leetcodeSessionCookie) {
+      try {
+        const fullSyncResponse = await axios.get("https://leetcode.com/api/problems/all/", {
+          headers: {
+            "User-Agent": "Mozilla/5.0",
+            Referer: "https://leetcode.com",
+            Cookie: `LEETCODE_SESSION=${user.leetcodeSessionCookie}`,
+          },
+          timeout: 15000,
+        });
+
+        const pairs = fullSyncResponse.data?.stat_status_pairs;
+        if (Array.isArray(pairs)) {
+          const slugMap = new Map();
+          for (const p of problems) {
+            const slug = slugFromUrl(p.url);
+            if (slug) slugMap.set(slug, p);
+          }
+
+          for (const pair of pairs) {
+            const slug = pair.stat?.question__title_slug;
+            if (!slug) continue;
+            const problem = slugMap.get(slug);
+            if (!problem) continue;
+
+            if (pair.status === "ac") {
+              if (user.progress[problem.id] !== "completed") {
+                Storage.updateUserProgress(req.user.id, problem.id, "completed");
+                completedCount++;
+              }
+            } else if (pair.status === "notac") {
+              if (
+                !user.progress[problem.id] ||
+                user.progress[problem.id] === "not-attempted"
+              ) {
+                Storage.updateUserProgress(req.user.id, problem.id, "attempted");
+                attemptedCount++;
+              }
+            }
+          }
+          fullSyncDone = true;
+        }
+      } catch (fullSyncError) {
+        // Session cookie might be expired - don't fail the whole request
+        console.warn("Full sync with saved cookie failed:", fullSyncError.message);
+      }
+    }
+
     const stats = await fetchLeetCodeStats(user.leetcodeUsername);
     Storage.updateUser(req.user.id, {
       leetcodeData: { ...stats, lastUpdated: new Date().toISOString() },
     });
 
+    let message = `Synced: ${updatedCount} newly completed, ${attemptedFromSync} newly attempted`;
+    if (fullSyncDone) {
+      message += `. Full history sync: ${completedCount} completed, ${attemptedCount} attempted`;
+    }
+
     res.json({
-      message: `Synced: ${updatedCount} newly completed, ${attemptedFromSync} newly attempted`,
+      message,
       stats,
       progressStats: Storage.getUserProgressStats(req.user.id),
     });
@@ -179,31 +239,32 @@ router.post("/sync", auth, async (req, res) => {
   }
 });
 
-// Full-history sync — requires the user's own LEETCODE_SESSION cookie value,
-// since LeetCode's public API has no way to expose someone's full solved
-// history from a username alone. The cookie is used for this one request
-// only and is never written to disk.
+// Full-history sync — uses saved session cookie if available, otherwise requires new one
 router.post("/full-sync", auth, async (req, res) => {
   const { sessionCookie } = req.body;
-  if (!sessionCookie || typeof sessionCookie !== "string") {
+  const user = Storage.findUserById(req.user.id);
+  
+  // Use provided cookie or fall back to saved one
+  const cookieToUse = sessionCookie?.trim() || user.leetcodeSessionCookie;
+  
+  if (!cookieToUse) {
     return res
       .status(400)
-      .json({ message: "LeetCode session cookie is required" });
+      .json({ message: "LeetCode session cookie is required (provide one or save it first)" });
+  }
+
+  if (!user.leetcodeUsername) {
+    return res
+      .status(400)
+      .json({ message: "Please connect your LeetCode account first" });
   }
 
   try {
-    const user = Storage.findUserById(req.user.id);
-    if (!user.leetcodeUsername) {
-      return res
-        .status(400)
-        .json({ message: "Please connect your LeetCode account first" });
-    }
-
     const response = await axios.get("https://leetcode.com/api/problems/all/", {
       headers: {
         "User-Agent": "Mozilla/5.0",
         Referer: "https://leetcode.com",
-        Cookie: `LEETCODE_SESSION=${sessionCookie.trim()}`,
+        Cookie: `LEETCODE_SESSION=${cookieToUse}`,
       },
       timeout: 15000,
     });
@@ -249,12 +310,22 @@ router.post("/full-sync", auth, async (req, res) => {
     }
 
     const stats = await fetchLeetCodeStats(user.leetcodeUsername);
-    Storage.updateUser(req.user.id, {
+    const updateData = {
       leetcodeData: { ...stats, lastUpdated: new Date().toISOString() },
-    });
+    };
+    // Only save session cookie if a new one was provided
+    if (sessionCookie && sessionCookie.trim()) {
+      updateData.leetcodeSessionCookie = sessionCookie.trim();
+    }
+    Storage.updateUser(req.user.id, updateData);
+
+    let message = `Full sync complete — marked ${completedCount} newly completed and ${attemptedCount} newly attempted`;
+    if (sessionCookie && sessionCookie.trim()) {
+      message += `. Session saved for future syncs.`;
+    }
 
     res.json({
-      message: `Full sync complete — marked ${completedCount} newly completed and ${attemptedCount} newly attempted`,
+      message,
       completedCount,
       attemptedCount,
       stats,

@@ -54,6 +54,7 @@ class Storage {
         hardSolved: 0,
         lastUpdated: null,
       },
+      leetcodeSessionCookie: null,
       progress: {},
       activityLog: {}, // { "YYYY-MM-DD": count } — powers the calendar and real streak
       googleId: userData.googleId || null,

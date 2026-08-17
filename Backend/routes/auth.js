@@ -136,6 +136,13 @@ router.post("/logout", auth, (req, res) => {
   res.json({ message: "Logged out successfully" });
 });
 
+// ---------- CLEAR LEETCODE SESSION COOKIE ----------
+router.post("/clear-leetcode-session", auth, (req, res) => {
+  const updatedUser = Storage.updateUser(req.user.id, { leetcodeSessionCookie: null });
+  const { password: _, ...userWithoutPassword } = updatedUser;
+  res.json({ message: "LeetCode session cleared", user: userWithoutPassword });
+});
+
 // ---------- GOOGLE TOKEN LOGIN ----------
 router.post("/google", async (req, res) => {
   try {

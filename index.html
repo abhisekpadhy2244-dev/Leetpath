@@ -152,8 +152,12 @@
                                             <li>Log into leetcode.com in this browser</li>
                                             <li>Open DevTools (F12) → Application tab → Cookies → https://leetcode.com</li>
                                             <li>Find <code>LEETCODE_SESSION</code>, copy its Value</li>
-                                            <li>Paste it below. It's used once for this sync and never stored.</li>
+                                            <li>Paste it below. Once saved, future "Sync Now" will use it automatically for full history sync.</li>
                                         </ol>
+                                    </div>
+                                    <div id="saved-session-status" hidden>
+                                        <span class="session-saved-badge">✓ Session cookie saved</span>
+                                        <button type="button" class="btn btn-ghost btn-sm" id="btn-clear-session" style="margin-left: 8px;">Clear Saved Session</button>
                                     </div>
                                     <input type="password" id="lc-session-input" placeholder="Paste LEETCODE_SESSION value" aria-label="LeetCode session cookie">
                                     <button class="btn btn-sm btn-primary" id="btn-full-sync">Run Full Sync</button>

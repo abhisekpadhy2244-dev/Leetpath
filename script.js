@@ -710,8 +710,21 @@ function updateUI() {
       $("leetcode-stats").hidden = false;
       if (currentUser.leetcodeData)
         updateLeetCodeStats(currentUser.leetcodeData);
+      
+      // Show saved session status
+      const savedSessionStatus = $("saved-session-status");
+      const sessionInput = $("lc-session-input");
+      if (currentUser.leetcodeSessionCookie) {
+        savedSessionStatus.hidden = false;
+        sessionInput.placeholder = "Session cookie saved — enter new one to update";
+        sessionInput.value = "";
+      } else {
+        savedSessionStatus.hidden = true;
+        sessionInput.placeholder = "Paste LEETCODE_SESSION value";
+      }
     } else {
       $("leetcode-stats").hidden = true;
+      $("saved-session-status").hidden = true;
     }
   } catch (error) {
     reportUnexpectedError(error);
@@ -804,7 +817,8 @@ function toggleFullSyncHelp() {
 
 async function runFullSync() {
   const sessionCookie = $("lc-session-input").value.trim();
-  if (!sessionCookie) {
+  const hadSavedSession = !!currentUser.leetcodeSessionCookie;
+  if (!sessionCookie && !hadSavedSession) {
     showToast("Paste your LEETCODE_SESSION cookie first", "error");
     return;
   }
@@ -817,14 +831,18 @@ async function runFullSync() {
       "Running full history sync — this can take a moment...",
       "success",
     );
+    const body = sessionCookie ? { sessionCookie } : {};
     const res = await api(`${API_URL}/api/leetcode/full-sync`, {
       method: "POST",
-      body: { sessionCookie },
+      body,
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Full sync failed");
 
-    $("lc-session-input").value = "";
+    // Only clear input if user entered a new cookie (not using saved one)
+    if (sessionCookie) {
+      $("lc-session-input").value = "";
+    }
     await loadProblems();
     updateUI();
     updateStats();
@@ -832,6 +850,31 @@ async function runFullSync() {
     showToast(data.message || "Full sync complete!");
   } catch (error) {
     console.error("Full sync error:", error);
+    showToast(error.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+
+async function clearSavedSession() {
+  const btn = $("btn-clear-session");
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Clearing...";
+  try {
+    const res = await api(`${API_URL}/api/auth/clear-leetcode-session`, {
+      method: "POST",
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to clear session");
+    
+    currentUser.leetcodeSessionCookie = null;
+    localStorage.setItem("user", JSON.stringify(currentUser));
+    updateUI();
+    showToast("Saved session cleared");
+  } catch (error) {
+    console.error("Clear session error:", error);
     showToast(error.message, "error");
   } finally {
     btn.disabled = false;
@@ -1082,6 +1125,7 @@ function setupApp() {
   $("btn-toggle-full-sync").addEventListener("click", toggleFullSyncPanel);
   $("btn-full-sync-help").addEventListener("click", toggleFullSyncHelp);
   $("btn-full-sync").addEventListener("click", guardAsyncClick(runFullSync));
+  $("btn-clear-session").addEventListener("click", guardAsyncClick(clearSavedSession));
   $("streak-banner-dismiss")?.addEventListener("click", () => {
     localStorage.setItem(
       "leetpath_banner_dismissed",
