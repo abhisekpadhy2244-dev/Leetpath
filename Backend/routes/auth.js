@@ -116,8 +116,13 @@ router.post("/login", async (req, res) => {
 
 // ---------- GET CURRENT USER ----------
 router.get("/me", auth, (req, res) => {
-  const stats = Storage.getUserProgressStats(req.user.id);
-  res.json({ user: { ...req.user, progressStats: stats } });
+  const user = Storage.findUserById(req.user.id);
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+  const stats = Storage.getUserProgressStats(user.id);
+  const { password, ...userWithoutPassword } = user;
+  res.json({ user: { ...userWithoutPassword, progressStats: stats } });
 });
 
 // ---------- UPDATE LEETCODE USERNAME ----------
