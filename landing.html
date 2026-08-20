@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeetPath - Ultimate DSA Mastery Tracker</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="description" content="Track your DSA journey with LeetPath. 400+ curated problems from Striver & Love Babbar sheets, progress tracking, LeetCode sync, activity calendar, and more.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Landing page specific styles */
+        .landing-page { min-height: 100vh; display: flex; flex-direction: column; }
+        .landing-header { position: fixed; top: 0; left: 0; right: 0; z-index: 40; background: rgba(15, 16, 17, 0.85); backdrop-filter: blur(12px); border-bottom: 0.5px solid var(--border); }
+        .landing-header-inner { max-width: 1440px; margin: 0 auto; padding: var(--sp-16) var(--sp-24); display: flex; align-items: center; justify-content: space-between; gap: var(--sp-16); }
+        .landing-logo { display: flex; align-items: center; gap: var(--sp-12); }
+        .landing-logo-mark { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--surface-elevated); border: 0.5px solid var(--border); border-radius: var(--radius); font-size: 1.3rem; color: var(--cta); }
+        .landing-logo-name { font-size: 18px; font-weight: 590; color: var(--text-heading); letter-spacing: -0.011em; }
+        .landing-nav { display: flex; align-items: center; gap: var(--sp-32); }
+        .landing-nav a { font-size: 14px; color: var(--text-secondary); font-weight: 500; transition: color 0.15s; }
+        .landing-nav a:hover { color: var(--text-heading); }
+        .landing-cta { display: flex; align-items: center; gap: var(--sp-12); }
+        .landing-hero { flex: 1; display: flex; align-items: center; padding: calc(80px + var(--sp-64)) var(--sp-24) var(--sp-96); max-width: 1440px; margin: 0 auto; width: 100%; }
+        .hero-content { max-width: 720px; }
+        .hero-badge { display: inline-flex; align-items: center; gap: var(--sp-8); background: var(--surface-pill); border: 0.5px solid var(--border); border-radius: var(--radius-pill); padding: 6px 12px; font-size: 13px; color: var(--text-secondary); margin-bottom: var(--sp-24); }
+        .hero-badge-dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .hero-title { font-size: clamp(36px, 5vw, 56px); font-weight: 600; line-height: 1.05; letter-spacing: -0.02em; color: var(--text-heading); margin-bottom: var(--sp-20); }
+        .hero-title-accent { color: var(--cta); }
+        .hero-description { font-size: var(--text-body-lg); line-height: 1.6; color: var(--text-secondary); margin-bottom: var(--sp-32); max-width: 540px; }
+        .hero-actions { display: flex; flex-wrap: wrap; gap: var(--sp-12); margin-bottom: var(--sp-48); }
+        .btn-hero-primary { padding: 14px 28px; font-size: 15px; font-weight: 590; border-radius: var(--radius); background: var(--cta); color: var(--cta-text); border: none; transition: background 0.15s, transform 0.1s; }
+        .btn-hero-primary:hover { background: #eef94a; transform: translateY(-1px); }
+        .btn-hero-primary:active { transform: translateY(0); }
+        .btn-hero-secondary { padding: 14px 28px; font-size: 15px; font-weight: 510; border-radius: var(--radius); background: transparent; color: var(--text-primary); border: 0.5px solid var(--border); transition: border-color 0.15s, background 0.15s; }
+        .btn-hero-secondary:hover { border-color: var(--border-strong); background: var(--surface-pill); }
+        .hero-trust { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-16); font-size: 13px; color: var(--text-muted); }
+        .hero-trust-items { display: flex; flex-wrap: wrap; gap: var(--sp-16); }
+        .hero-trust-item { display: flex; align-items: center; gap: var(--sp-6); }
+        .hero-trust-icon { width: 18px; height: 18px; color: var(--text-muted); opacity: 0.6; }
+        .landing-main { max-width: 1440px; margin: 0 auto; padding: 0 var(--sp-24) var(--sp-96); width: 100%; }
+        .features-section { margin-bottom: var(--sp-96); }
+        .section-header { text-align: center; margin-bottom: var(--sp-48); }
+        .section-label { display: inline-block; font-size: 11px; font-weight: 510; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cta); margin-bottom: var(--sp-12); }
+        .section-title { font-size: clamp(28px, 3.5vw, 40px); font-weight: 600; line-height: 1.15; letter-spacing: -0.015em; color: var(--text-heading); margin-bottom: var(--sp-12); }
+        .section-description { font-size: 16px; line-height: 1.6; color: var(--text-secondary); max-width: 560px; margin: 0 auto; }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-24); }
+        .feature-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: var(--sp-28); transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s; }
+        .feature-card:hover { border-color: var(--border-strong); transform: translateY(-2px); box-shadow: var(--shadow-elevated); }
+        .feature-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: var(--surface-elevated); border: 0.5px solid var(--border); border-radius: var(--radius); color: var(--cta); font-size: 22px; margin-bottom: var(--sp-16); }
+        .feature-title { font-size: 18px; font-weight: 590; color: var(--text-heading); margin-bottom: var(--sp-8); letter-spacing: -0.006em; }
+        .feature-description { font-size: 14px; line-height: 1.6; color: var(--text-secondary); }
+        .sheets-section { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: var(--sp-48); margin-bottom: var(--sp-96); }
+        .sheets-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-32); align-items: start; }
+        .sheet-card { padding: var(--sp-24); background: var(--surface-elevated); border: 0.5px solid var(--border); border-radius: var(--radius-lg); }
+        .sheet-badge { display: inline-block; font-size: 11px; font-weight: 510; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin-bottom: var(--sp-8); }
+        .sheet-title { font-size: 22px; font-weight: 590; color: var(--text-heading); margin-bottom: var(--sp-8); letter-spacing: -0.006em; }
+        .sheet-description { font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin-bottom: var(--sp-20); }
+        .sheet-stats { display: flex; flex-wrap: wrap; gap: var(--sp-16); margin-bottom: var(--sp-20); }
+        .sheet-stat { display: flex; flex-direction: column; gap: 2px; }
+        .sheet-stat-value { font-family: var(--font-mono); font-size: 24px; font-weight: 590; color: var(--text-heading); }
+        .sheet-stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+        .sheet-topics { display: flex; flex-wrap: wrap; gap: var(--sp-8); }
+        .sheet-topic { font-size: 11px; color: var(--text-secondary); background: var(--surface-pill); border: 0.5px solid var(--border); padding: 4px 10px; border-radius: var(--radius-badge); }
+        .social-proof-section { margin-bottom: var(--sp-96); }
+        .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-24); }
+        .testimonial-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: var(--sp-24); transition: border-color 0.2s; }
+        .testimonial-card:hover { border-color: var(--border-strong); }
+        .testimonial-stars { display: flex; gap: 2px; margin-bottom: var(--sp-12); color: var(--cta); font-size: 16px; }
+        .testimonial-text { font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin-bottom: var(--sp-16); }
+        .testimonial-author { display: flex; align-items: center; gap: var(--sp-12); }
+        .testimonial-avatar { width: 40px; height: 40px; border-radius: var(--radius-pill); background: var(--color-iris-violet); color: var(--color-paper); display: flex; align-items: center; justify-content: center; font-weight: 590; font-size: 14px; }
+        .testimonial-info { display: flex; flex-direction: column; }
+        .testimonial-name { font-size: 14px; font-weight: 510; color: var(--text-heading); }
+        .testimonial-role { font-size: 12px; color: var(--text-muted); }
+        .cta-section { text-align: center; padding: var(--sp-64) var(--sp-24); background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); }
+        .cta-title { font-size: clamp(28px, 3.5vw, 40px); font-weight: 600; line-height: 1.15; letter-spacing: -0.015em; color: var(--text-heading); margin-bottom: var(--sp-12); }
+        .cta-description { font-size: 16px; line-height: 1.6; color: var(--text-secondary); max-width: 560px; margin: 0 auto var(--sp-28); }
+        .cta-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-12); }
+        .landing-footer { border-top: 0.5px solid var(--border); padding: var(--sp-32) var(--sp-24); margin-top: var(--sp-64); }
+        .footer-inner { max-width: 1440px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--sp-16); font-size: 13px; color: var(--text-muted); }
+        .footer-links { display: flex; flex-wrap: wrap; gap: var(--sp-24); }
+        .footer-links a { color: var(--text-muted); transition: color 0.15s; }
+        .footer-links a:hover { color: var(--text-secondary); }
+        .landing-bg { position: fixed; inset: 0; z-index: -1; background: var(--bg); overflow: hidden; }
+        .landing-bg-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px); background-size: 64px 64px; mask-image: radial-gradient(ellipse 80% 80% at 50% 0%, black 30%, transparent 100%); }
+        .landing-bg-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; pointer-events: none; }
+        .landing-bg-orb-1 { width: 500px; height: 500px; background: var(--color-iris-violet); top: -100px; right: -100px; }
+        .landing-bg-orb-2 { width: 400px; height: 400px; background: var(--color-lavender); bottom: 20%; left: -100px; }
+        @media (max-width: 1024px) { .features-grid, .testimonials-grid { grid-template-columns: 1fr; } .sheets-grid { grid-template-columns: 1fr; } .hero-trust { justify-content: center; } }
+        @media (max-width: 768px) { .landing-nav { display: none; } .hero-actions { flex-direction: column; } .btn-hero-primary, .btn-hero-secondary { width: 100%; } .footer-inner { flex-direction: column; text-align: center; } }
+    </style>
+</head>
+<body>
+    <div class="landing-bg" aria-hidden="true">
+        <div class="landing-bg-grid"></div>
+        <div class="landing-bg-orb landing-bg-orb-1"></div>
+        <div class="landing-bg-orb landing-bg-orb-2"></div>
+    </div>
+
+    <div class="landing-page">
+        <!-- Header -->
+        <header class="landing-header" role="banner">
+            <div class="landing-header-inner">
+                <div class="landing-logo">
+                    <div class="landing-logo-mark" aria-hidden="true">⚡</div>
+                    <span class="landing-logo-name">LeetPath</span>
+                </div>
+                <nav class="landing-nav" aria-label="Main navigation">
+                    <a href="#features">Features</a>
+                    <a href="#sheets">Problem Sheets</a>
+                    <a href="#testimonials">Testimonials</a>
+                </nav>
+                <div class="landing-cta">
+                    <a href="index.html" class="btn btn-ghost">Sign In</a>
+                    <button class="btn btn-primary" onclick="document.getElementById('cta-signup').scrollIntoView({behavior:'smooth'})">Get Started Free</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Hero -->
+        <section class="landing-hero" aria-labelledby="hero-title">
+            <div class="hero-content">
+                <div class="hero-badge" aria-label="New features available">
+                    <span class="hero-badge-dot" aria-hidden="true"></span>
+                    <span>New: Full LeetCode History Sync & Activity Calendar</span>
+                </div>
+                <h1 id="hero-title" class="hero-title">Master DSA with <span class="hero-title-accent">400+ Curated Problems</span></h1>
+                <p class="hero-description">The only tracker that combines Striver's A2Z Sheet and Love Babbar's DSA Sheet with LeetCode sync, streak tracking, and a GitHub-style activity calendar. Stop managing spreadsheets. Start solving.</p>
+                <div class="hero-actions">
+                    <button class="btn btn-hero-primary" onclick="window.location.href='index.html'">Start Tracking Free</button>
+                    <button class="btn btn-hero-secondary">Watch Demo</button>
+                </div>
+                <div class="hero-trust">
+                    <span>Trusted by 10,000+ engineers</span>
+                    <div class="hero-trust-items">
+                        <div class="hero-trust-item">
+                            <svg class="hero-trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                            <span>LeetCode Verified</span>
+                        </div>
+                        <div class="hero-trust-item">
+                            <svg class="hero-trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                            <span>Real-time Sync</span>
+                        </div>
+                        <div class="hero-trust-item">
+                            <svg class="hero-trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <span>Privacy First</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <main class="landing-main" role="main">
+            <section id="features" class="features-section" aria-labelledby="features-title">
+                <header class="section-header">
+                    <span class="section-label">Features</span>
+                    <h2 id="features-title" class="section-title">Everything you need to master DSA</h2>
+                    <p class="section-description">Built by engineers who've been through the grind. Every feature exists because we needed it ourselves.</p>
+                </header>
+                <div class="features-grid">
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">📋</div>
+                        <h3 class="feature-title">Dual Sheet Coverage</h3>
+                        <p class="feature-description">Striver's A2Z Sheet (280 problems) + Love Babbar's DSA Sheet (450 problems) — deduplicated into 400+ unique problems with topic tags, difficulty, and company frequency.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">🔄</div>
+                        <h3 class="feature-title">LeetCode Auto-Sync</h3>
+                        <p class="feature-description">Connect your LeetCode account once. Click "Sync Now" to pull your latest submissions. For full history, paste your session cookie — we'll backfill everything.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">🔥</div>
+                        <h3 class="feature-title">Streak & Activity Calendar</h3>
+                        <p class="feature-description">GitHub-style contribution heatmap shows your solving pattern. Daily streak counter keeps you accountable. Banner reminds you when you're about to break a streak.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">🎯</div>
+                        <h3 class="feature-title">Smart Filtering & Search</h3>
+                        <p class="feature-description">Filter by topic, status (not attempted/attempted/completed), difficulty. Search across problem names, companies, and topics. ⌘K to focus search instantly.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">📊</div>
+                        <h3 class="feature-title">Progress Analytics</h3>
+                        <p class="feature-description">Circular progress ring, completion breakdown, topic-wise progress, day streak. Export your progress as JSON anytime. Reset with one click if you want a fresh start.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">⚡</div>
+                        <h3 class="feature-title">Keyboard-First Design</h3>
+                        <p class="feature-description">Navigate with arrow keys, ⌘K for search, ⌘Enter to submit, Esc to close modals. Every interaction optimized for speed — no mouse required.</p>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Problem Sheets -->
+            <section id="sheets" class="sheets-section" aria-labelledby="sheets-title">
+                <header class="section-header">
+                    <span class="section-label">Problem Sheets</span>
+                    <h2 id="sheets-title" class="section-title">Two legendary sheets. One unified tracker.</h2>
+                    <p class="section-description">We merged, deduplicated, and tagged every problem so you don't have to.</p>
+                </header>
+                <div class="sheets-grid">
+                    <article class="sheet-card">
+                        <span class="sheet-badge">Striver A2Z DSA Sheet</span>
+                        <h3 class="sheet-title">280 Problems • 25 Topics</h3>
+                        <p class="sheet-description">The most structured DSA roadmap — from basics to advanced. Covers Arrays, Strings, Linked Lists, Trees, Graphs, DP, Tries, and more. Each topic builds on the previous.</p>
+                        <div class="sheet-stats">
+                            <div class="sheet-stat"><span class="sheet-stat-value">280</span><span class="sheet-stat-label">Problems</span></div>
+                            <div class="sheet-stat"><span class="sheet-stat-value">25</span><span class="sheet-stat-label">Topics</span></div>
+                            <div class="sheet-stat"><span class="sheet-stat-value">3</span><span class="sheet-stat-label">Difficulties</span></div>
+                        </div>
+                        <div class="sheet-topics">
+                            <span class="sheet-topic">Arrays</span>
+                            <span class="sheet-topic">Strings</span>
+                            <span class="sheet-topic">Linked List</span>
+                            <span class="sheet-topic">Stack & Queue</span>
+                            <span class="sheet-topic">Trees</span>
+                            <span class="sheet-topic">Graphs</span>
+                            <span class="sheet-topic">DP</span>
+                            <span class="sheet-topic">Tries</span>
+                            <span class="sheet-topic">Heaps</span>
+                            <span class="sheet-topic">+16 more</span>
+                        </div>
+                    </article>
+                    <article class="sheet-card">
+                        <span class="sheet-badge">Love Babbar DSA Sheet</span>
+                        <h3 class="sheet-title">450 Problems • 30 Topics</h3>
+                        <p class="sheet-description">The industry-standard interview prep sheet. Battle-tested by thousands of engineers at FAANG+. Includes company-tagged problems and a proven progression from easy to hard.</p>
+                        <div class="sheet-stats">
+                            <div class="sheet-stat"><span class="sheet-stat-value">450</span><span class="sheet-stat-label">Problems</span></div>
+                            <div class="sheet-stat"><span class="sheet-stat-value">30</span><span class="sheet-stat-label">Topics</span></div>
+                            <div class="sheet-stat"><span class="sheet-stat-value">150+</span><span class="sheet-stat-label">Companies</span></div>
+                        </div>
+                        <div class="sheet-topics">
+                            <span class="sheet-topic">Arrays</span>
+                            <span class="sheet-topic">Matrix</span>
+                            <span class="sheet-topic">Strings</span>
+                            <span class="sheet-topic">Search & Sort</span>
+                            <span class="sheet-topic">Linked List</span>
+                            <span class="sheet-topic">Binary Trees</span>
+                            <span class="sheet-topic">BST</span>
+                            <span class="sheet-topic">Greedy</span>
+                            <span class="sheet-topic">Backtracking</span>
+                            <span class="sheet-topic">+20 more</span>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Testimonials -->
+            <section id="testimonials" class="social-proof-section" aria-labelledby="testimonials-title">
+                <header class="section-header">
+                    <span class="section-label">Social Proof</span>
+                    <h2 id="testimonials-title" class="section-title">Loved by engineers everywhere</h2>
+                    <p class="section-description">Real feedback from developers who switched from spreadsheets and Notion.</p>
+                </header>
+                <div class="testimonials-grid">
+                    <article class="testimonial-card">
+                        <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
+                        <p class="testimonial-text">"Finally a tracker that doesn't feel like enterprise software. The LeetCode sync actually works, and the streak feature kept me consistent for 60+ days straight."</p>
+                        <div class="testimonial-author">
+                            <div class="testimonial-avatar">AK</div>
+                            <div class="testimonial-info">
+                                <span class="testimonial-name">Arjun K.</span>
+                                <span class="testimonial-role">Software Engineer @ Google</span>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="testimonial-card">
+                        <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
+                        <p class="testimonial-text">"Merged both sheets perfectly. I used to maintain a Notion database — this saves me hours every week. The activity calendar is oddly motivating."</p>
+                        <div class="testimonial-author">
+                            <div class="testimonial-avatar">PS</div>
+                            <div class="testimonial-info">
+                                <span class="testimonial-name">Priya S.</span>
+                                <span class="testimonial-role">Backend Engineer @ Amazon</span>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="testimonial-card">
+                        <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
+                        <p class="testimonial-text">"The full history sync using session cookie is a game changer. Imported 2 years of LeetCode history in seconds. Best DSA tracker I've used, hands down."</p>
+                        <div class="testimonial-author">
+                            <div class="testimonial-avatar">MR</div>
+                            <div class="testimonial-info">
+                                <span class="testimonial-name">Mohit R.</span>
+                                <span class="testimonial-role">Full Stack @ Microsoft</span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section class="cta-section" aria-labelledby="cta-title">
+                <h2 id="cta-title" class="cta-title">Ready to level up your DSA game?</h2>
+                <p class="cta-description">Join 10,000+ engineers tracking their progress with LeetPath. Free forever. No credit card required.</p>
+                <div class="cta-actions" id="cta-signup">
+                    <a href="index.html" class="btn btn-hero-primary">Start Free — No Account Needed</a>
+                    <button class="btn btn-hero-secondary">See Live Demo</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="landing-footer" role="contentinfo">
+            <div class="footer-inner">
+                <p>© 2025 LeetPath. Built for engineers, by engineers.</p>
+                <nav class="footer-links" aria-label="Footer navigation">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">GitHub</a>
+                    <a href="#">Discord</a>
+                </nav>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

@@ -57,17 +57,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (authToken) {
     const restored = await hydrateCurrentUser();
     if (!restored) {
-      // token was stale/invalid — clear it and continue as a guest
+      // token was stale/invalid — clear it and redirect to landing
       authToken = null;
       currentUser = null;
       localStorage.removeItem("authToken");
       localStorage.removeItem("user");
+      window.location.href = 'landing.html';
+      return;
     }
+  } else {
+    // No token - redirect to landing page
+    window.location.href = 'landing.html';
+    return;
   }
 
-  // The site is always browsable, logged in or not. Signing in is only
-  // ever prompted when the person tries to do something that needs an
-  // account — solving a problem or connecting LeetCode.
   initApp();
 });
 
@@ -95,6 +98,43 @@ function setupAuth() {
   $("auth-modal").addEventListener("click", (e) => {
     if (e.target === $("auth-modal")) closeAuth();
   });
+
+  // Password toggle
+  document.querySelectorAll(".password-toggle").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const input = btn.previousElementSibling;
+      const isPassword = input.type === "password";
+      input.type = isPassword ? "text" : "password";
+      btn.textContent = isPassword ? "🙈" : "👁";
+    });
+  });
+
+  // Password strength meter
+  const registerPassword = $("register-password");
+  const strengthEl = $("register-password-strength");
+  const strengthFill = $("register-strength-fill");
+  const strengthText = $("register-strength-text");
+  if (registerPassword && strengthEl) {
+    registerPassword.addEventListener("input", () => {
+      const val = registerPassword.value;
+      if (val.length === 0) {
+        strengthEl.hidden = true;
+        return;
+      }
+      strengthEl.hidden = false;
+      let score = 0;
+      if (val.length >= 8) score++;
+      if (/[A-Z]/.test(val)) score++;
+      if (/[a-z]/.test(val)) score++;
+      if (/[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+      const levels = [{ class: "weak", text: "Weak" }, { class: "fair", text: "Fair" }, { class: "good", text: "Good" }];
+      const level = levels[Math.min(Math.floor(score / 2), 2)];
+      strengthFill.className = "strength-fill " + level.class;
+      strengthText.textContent = level.text;
+      strengthText.style.color = level.class === "weak" ? "var(--danger)" : level.class === "fair" ? "var(--color-fog)" : "var(--success)";
+    });
+  }
 
   $("login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -245,9 +285,7 @@ function logout() {
   allProblems = [];
   localStorage.removeItem("authToken");
   localStorage.removeItem("user");
-  renderTopics();
-  showToast("Signed out", "success");
-  openAuth();
+  window.location.href = 'landing.html';
 }
 
 // Wraps an async click handler so rapid/repeated clicks while the previous
@@ -314,8 +352,6 @@ async function initApp() {
   applyFilters();
   if (currentUser) {
     await loadActivity();
-  } else {
-    renderGuestState();
   }
 }
 
@@ -369,17 +405,19 @@ function renderTopics() {
       allProblems.length,
       "all",
       currentTopic === "all",
+      0
     );
     list.appendChild(allItem);
 
     Object.entries(topicCounts)
       .sort((a, b) => b[1] - a[1])
-      .forEach(([topic, count]) => {
+      .forEach(([topic, count], index) => {
         const item = createTopicItem(
           formatTopicName(topic),
           count,
           topic,
           topic === currentTopic,
+          index + 1
         );
         list.appendChild(item);
       });
@@ -388,12 +426,13 @@ function renderTopics() {
   }
 }
 
-function createTopicItem(name, count, topic, isActive) {
+function createTopicItem(name, count, topic, isActive, index) {
   const li = document.createElement("li");
   li.className = "topic-item" + (isActive ? " active" : "");
   li.dataset.topic = topic;
   li.setAttribute("role", "option");
   li.setAttribute("aria-selected", isActive ? "true" : "false");
+  li.style.animationDelay = `${Math.min(index * 30, 300)}ms`;
   li.innerHTML = `<span class="topic-name">${escapeHtml(name)}</span><span class="topic-count">${count}</span>`;
   li.addEventListener("click", () => selectTopic(topic));
   return li;
@@ -482,7 +521,7 @@ function updateStatCardActive(statusFilter) {
       (id === "card-completed" && statusFilter === "completed") ||
       (id === "card-attempted" && statusFilter === "attempted") ||
       (id === "card-total" && statusFilter === "all");
-    el.classList.toggle("stat-card-active", isActive);
+    el.classList.toggle("stat-item-active", isActive);
   });
 }
 
@@ -616,6 +655,19 @@ async function markAttemptedOnOpen(problemId) {
 }
 
 // ==================== STATS & PROGRESS ====================
+function animateValue(el, start, end, duration = 400) {
+  if (!el) return;
+  const startTime = performance.now();
+  function step(now) {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+    const current = Math.round(start + (end - start) * eased);
+    el.textContent = current;
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 function updateStats() {
   try {
     const completed = allProblems.filter(
@@ -627,10 +679,10 @@ function updateStats() {
     const total = allProblems.length;
     const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-    $("stat-completed").textContent = completed;
-    $("stat-attempted").textContent = attempted;
-    $("stat-total").textContent = total;
-    $("stat-streak").textContent = streak;
+    animateValue($("stat-completed"), parseInt($("stat-completed").textContent) || 0, completed);
+    animateValue($("stat-attempted"), parseInt($("stat-attempted").textContent) || 0, attempted);
+    animateValue($("stat-total"), parseInt($("stat-total").textContent) || 0, total);
+    animateValue($("stat-streak"), parseInt($("stat-streak").textContent) || 0, streak);
 
     $("overview-percent").textContent = percent + "%";
     $("overview-fraction").textContent = `${completed} / ${total}`;
@@ -639,9 +691,9 @@ function updateStats() {
       circumference * (1 - percent / 100);
     $("overview-bar").style.width = percent + "%";
 
-    $("bp-completed").textContent = completed;
-    $("bp-attempted").textContent = attempted;
-    $("bp-remaining").textContent = total - completed - attempted;
+    animateValue($("bp-completed"), parseInt($("bp-completed").textContent) || 0, completed);
+    animateValue($("bp-attempted"), parseInt($("bp-attempted").textContent) || 0, attempted);
+    animateValue($("bp-remaining"), parseInt($("bp-remaining").textContent) || 0, total - completed - attempted);
     $("overview-title").textContent =
       currentTopic === "all" ? "All Problems" : formatTopicName(currentTopic);
   } catch (error) {
@@ -733,10 +785,10 @@ function updateUI() {
 
 function updateLeetCodeStats(data) {
   try {
-    $("lc-total").textContent = data.totalSolved || 0;
-    $("lc-easy").textContent = data.easySolved || 0;
-    $("lc-medium").textContent = data.mediumSolved || 0;
-    $("lc-hard").textContent = data.hardSolved || 0;
+    animateValue($("lc-total"), parseInt($("lc-total").textContent) || 0, data.totalSolved || 0);
+    animateValue($("lc-easy"), parseInt($("lc-easy").textContent) || 0, data.easySolved || 0);
+    animateValue($("lc-medium"), parseInt($("lc-medium").textContent) || 0, data.mediumSolved || 0);
+    animateValue($("lc-hard"), parseInt($("lc-hard").textContent) || 0, data.hardSolved || 0);
   } catch (error) {
     reportUnexpectedError(error);
   }
@@ -1072,8 +1124,8 @@ function showToast(message, type = "success") {
   requestAnimationFrame(() => toast.classList.add("show"));
 
   setTimeout(() => {
-    toast.classList.remove("show");
-    setTimeout(() => toast.remove(), 350);
+    toast.classList.add("removing");
+    toast.addEventListener("animationend", () => toast.remove(), { once: true });
   }, 3000);
 }
 
@@ -1166,17 +1218,33 @@ function setupApp() {
     searchDebounce = setTimeout(applyFilters, 200);
   });
 
-  // Clickable stat cards -> filter by status
-  document.querySelectorAll(".stat-card[data-filter]").forEach((card) => {
+  // Density selector
+  const densitySelector = $("density-selector");
+  if (densitySelector) {
+    const savedDensity = localStorage.getItem("layout-density") || "comfortable";
+    document.documentElement.setAttribute("data-density", savedDensity);
+    densitySelector.querySelectorAll(".density-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.density === savedDensity);
+      btn.addEventListener("click", () => {
+        densitySelector.querySelectorAll(".density-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        document.documentElement.setAttribute("data-density", btn.dataset.density);
+        localStorage.setItem("layout-density", btn.dataset.density);
+      });
+    });
+  }
+
+  // Clickable stat items -> filter by status
+  document.querySelectorAll(".stat-item[data-filter]").forEach((item) => {
     const activate = () => {
-      $("filter-status").value = card.dataset.filter;
+      $("filter-status").value = item.dataset.filter;
       applyFilters();
       $("problems-tbody")
         .closest(".card")
         ?.scrollIntoView({ behavior: "smooth", block: "start" });
     };
-    card.addEventListener("click", activate);
-    card.addEventListener("keydown", (e) => {
+    item.addEventListener("click", activate);
+    item.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         activate();
