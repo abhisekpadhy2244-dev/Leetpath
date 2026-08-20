@@ -31,11 +31,9 @@
         .hero-title-accent { color: var(--cta); }
         .hero-description { font-size: var(--text-body-lg); line-height: 1.6; color: var(--text-secondary); margin-bottom: var(--sp-32); max-width: 540px; }
         .hero-actions { display: flex; flex-wrap: wrap; gap: var(--sp-12); margin-bottom: var(--sp-48); }
-        .btn-hero-primary { padding: 14px 28px; font-size: 15px; font-weight: 590; border-radius: var(--radius); background: var(--cta); color: var(--cta-text); border: none; transition: background 0.15s, transform 0.1s; }
+        .btn-hero-primary { padding: 14px 28px; font-size: 15px; font-weight: 590; border-radius: var(--radius); background: var(--cta); color: var(--cta-text); border: none; transition: background 0.15s, transform 0.1s; cursor: pointer; }
         .btn-hero-primary:hover { background: #eef94a; transform: translateY(-1px); }
         .btn-hero-primary:active { transform: translateY(0); }
-        .btn-hero-secondary { padding: 14px 28px; font-size: 15px; font-weight: 510; border-radius: var(--radius); background: transparent; color: var(--text-primary); border: 0.5px solid var(--border); transition: border-color 0.15s, background 0.15s; }
-        .btn-hero-secondary:hover { border-color: var(--border-strong); background: var(--surface-pill); }
         .hero-trust { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-16); font-size: 13px; color: var(--text-muted); }
         .hero-trust-items { display: flex; flex-wrap: wrap; gap: var(--sp-16); }
         .hero-trust-item { display: flex; align-items: center; gap: var(--sp-6); }
@@ -64,17 +62,6 @@
         .sheet-stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
         .sheet-topics { display: flex; flex-wrap: wrap; gap: var(--sp-8); }
         .sheet-topic { font-size: 11px; color: var(--text-secondary); background: var(--surface-pill); border: 0.5px solid var(--border); padding: 4px 10px; border-radius: var(--radius-badge); }
-        .social-proof-section { margin-bottom: var(--sp-96); }
-        .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-24); }
-        .testimonial-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: var(--sp-24); transition: border-color 0.2s; }
-        .testimonial-card:hover { border-color: var(--border-strong); }
-        .testimonial-stars { display: flex; gap: 2px; margin-bottom: var(--sp-12); color: var(--cta); font-size: 16px; }
-        .testimonial-text { font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin-bottom: var(--sp-16); }
-        .testimonial-author { display: flex; align-items: center; gap: var(--sp-12); }
-        .testimonial-avatar { width: 40px; height: 40px; border-radius: var(--radius-pill); background: var(--color-iris-violet); color: var(--color-paper); display: flex; align-items: center; justify-content: center; font-weight: 590; font-size: 14px; }
-        .testimonial-info { display: flex; flex-direction: column; }
-        .testimonial-name { font-size: 14px; font-weight: 510; color: var(--text-heading); }
-        .testimonial-role { font-size: 12px; color: var(--text-muted); }
         .cta-section { text-align: center; padding: var(--sp-64) var(--sp-24); background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); }
         .cta-title { font-size: clamp(28px, 3.5vw, 40px); font-weight: 600; line-height: 1.15; letter-spacing: -0.015em; color: var(--text-heading); margin-bottom: var(--sp-12); }
         .cta-description { font-size: 16px; line-height: 1.6; color: var(--text-secondary); max-width: 560px; margin: 0 auto var(--sp-28); }
@@ -89,8 +76,8 @@
         .landing-bg-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; pointer-events: none; }
         .landing-bg-orb-1 { width: 500px; height: 500px; background: var(--color-iris-violet); top: -100px; right: -100px; }
         .landing-bg-orb-2 { width: 400px; height: 400px; background: var(--color-lavender); bottom: 20%; left: -100px; }
-        @media (max-width: 1024px) { .features-grid, .testimonials-grid { grid-template-columns: 1fr; } .sheets-grid { grid-template-columns: 1fr; } .hero-trust { justify-content: center; } }
-        @media (max-width: 768px) { .landing-nav { display: none; } .hero-actions { flex-direction: column; } .btn-hero-primary, .btn-hero-secondary { width: 100%; } .footer-inner { flex-direction: column; text-align: center; } }
+        @media (max-width: 1024px) { .features-grid { grid-template-columns: 1fr; } .sheets-grid { grid-template-columns: 1fr; } .hero-trust { justify-content: center; } }
+        @media (max-width: 768px) { .landing-nav { display: none; } .hero-actions { flex-direction: column; } .btn-hero-primary { width: 100%; } .footer-inner { flex-direction: column; text-align: center; } }
     </style>
 </head>
 <body>
@@ -111,11 +98,9 @@
                 <nav class="landing-nav" aria-label="Main navigation">
                     <a href="#features">Features</a>
                     <a href="#sheets">Problem Sheets</a>
-                    <a href="#testimonials">Testimonials</a>
                 </nav>
                 <div class="landing-cta">
-                    <a href="index.html" class="btn btn-ghost">Sign In</a>
-                    <button class="btn btn-primary" onclick="document.getElementById('cta-signup').scrollIntoView({behavior:'smooth'})">Get Started Free</button>
+                    <button class="btn btn-primary" onclick="startGoogleAuth()">Sign In</button>
                 </div>
             </div>
         </header>
@@ -130,11 +115,10 @@
                 <h1 id="hero-title" class="hero-title">Master DSA with <span class="hero-title-accent">400+ Curated Problems</span></h1>
                 <p class="hero-description">The only tracker that combines Striver's A2Z Sheet and Love Babbar's DSA Sheet with LeetCode sync, streak tracking, and a GitHub-style activity calendar. Stop managing spreadsheets. Start solving.</p>
                 <div class="hero-actions">
-                    <button class="btn btn-hero-primary" onclick="window.location.href='index.html'">Start Tracking Free</button>
-                    <button class="btn btn-hero-secondary">Watch Demo</button>
+                    <button class="btn btn-hero-primary" onclick="startGoogleAuth()">Start Free</button>
                 </div>
                 <div class="hero-trust">
-                    <span>Trusted by 10,000+ engineers</span>
+                    <span>Trusted by engineers</span>
                     <div class="hero-trust-items">
                         <div class="hero-trust-item">
                             <svg class="hero-trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
@@ -250,57 +234,12 @@
                 </div>
             </section>
 
-            <!-- Testimonials -->
-            <section id="testimonials" class="social-proof-section" aria-labelledby="testimonials-title">
-                <header class="section-header">
-                    <span class="section-label">Social Proof</span>
-                    <h2 id="testimonials-title" class="section-title">Loved by engineers everywhere</h2>
-                    <p class="section-description">Real feedback from developers who switched from spreadsheets and Notion.</p>
-                </header>
-                <div class="testimonials-grid">
-                    <article class="testimonial-card">
-                        <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
-                        <p class="testimonial-text">"Finally a tracker that doesn't feel like enterprise software. The LeetCode sync actually works, and the streak feature kept me consistent for 60+ days straight."</p>
-                        <div class="testimonial-author">
-                            <div class="testimonial-avatar">AK</div>
-                            <div class="testimonial-info">
-                                <span class="testimonial-name">Arjun K.</span>
-                                <span class="testimonial-role">Software Engineer @ Google</span>
-                            </div>
-                        </div>
-                    </article>
-                    <article class="testimonial-card">
-                        <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
-                        <p class="testimonial-text">"Merged both sheets perfectly. I used to maintain a Notion database — this saves me hours every week. The activity calendar is oddly motivating."</p>
-                        <div class="testimonial-author">
-                            <div class="testimonial-avatar">PS</div>
-                            <div class="testimonial-info">
-                                <span class="testimonial-name">Priya S.</span>
-                                <span class="testimonial-role">Backend Engineer @ Amazon</span>
-                            </div>
-                        </div>
-                    </article>
-                    <article class="testimonial-card">
-                        <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
-                        <p class="testimonial-text">"The full history sync using session cookie is a game changer. Imported 2 years of LeetCode history in seconds. Best DSA tracker I've used, hands down."</p>
-                        <div class="testimonial-author">
-                            <div class="testimonial-avatar">MR</div>
-                            <div class="testimonial-info">
-                                <span class="testimonial-name">Mohit R.</span>
-                                <span class="testimonial-role">Full Stack @ Microsoft</span>
-                            </div>
-                        </div>
-                    </article>
-                </div>
-            </section>
-
             <!-- CTA -->
             <section class="cta-section" aria-labelledby="cta-title">
                 <h2 id="cta-title" class="cta-title">Ready to level up your DSA game?</h2>
-                <p class="cta-description">Join 10,000+ engineers tracking their progress with LeetPath. Free forever. No credit card required.</p>
-                <div class="cta-actions" id="cta-signup">
-                    <a href="index.html" class="btn btn-hero-primary">Start Free — No Account Needed</a>
-                    <button class="btn btn-hero-secondary">See Live Demo</button>
+                <p class="cta-description">Join engineers tracking their progress with LeetPath. Free forever. No credit card required.</p>
+                <div class="cta-actions">
+                    <button class="btn btn-hero-primary" onclick="startGoogleAuth()">Start Free</button>
                 </div>
             </section>
         </main>
@@ -318,5 +257,20 @@
             </div>
         </footer>
     </div>
+
+    <script>
+        // Determine API URL (same logic as script.js)
+        const API_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+            ? "http://localhost:5000"
+            : "https://leetpath-19xb.onrender.com";
+
+        function startGoogleAuth() {
+            // Generate random state for OAuth security
+            const state = Math.random().toString(36).slice(2);
+            localStorage.setItem("oauth_state", state);
+            // Redirect to backend Google OAuth endpoint
+            window.location.href = `${API_URL}/api/auth/google?state=${state}`;
+        }
+    </script>
 </body>
 </html>
