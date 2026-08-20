@@ -963,22 +963,447 @@ async function exportProgress() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Export failed");
 
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `leetpath-progress-${currentUser.username}-${new Date().toISOString().split("T")[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast("Progress exported!");
+    // Show export options modal
+    showExportModal(data);
   } catch (error) {
     console.error("Export error:", error);
     showToast(error.message, "error");
   } finally {
     btn.disabled = false;
   }
+}
+
+function showExportModal(data) {
+  // Remove any existing modal
+  const existing = document.getElementById("export-modal");
+  if (existing) existing.remove();
+
+  const completed = allProblems.filter(p => p.status === "completed").length;
+  const attempted = allProblems.filter(p => p.status === "attempted").length;
+  const total = allProblems.length;
+  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const solvedProblems = allProblems.filter(p => p.status === "completed");
+  const recentSolved = solvedProblems.slice(-10).reverse(); // Last 10 solved
+
+  const modal = document.createElement("div");
+  modal.id = "export-modal";
+  modal.className = "modal-overlay show";
+  modal.innerHTML = `
+    <div class="modal-container" style="max-width: 520px; padding: var(--sp-24);">
+      <button class="modal-close" id="export-modal-close" aria-label="Close" style="top: var(--sp-12); right: var(--sp-12);">✕</button>
+      
+      <div class="modal-header" style="margin-bottom: var(--sp-20);">
+        <h2 style="font-size: var(--text-subheading); font-weight: 590; color: var(--text-heading);">Export Progress</h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: var(--sp-8);">Choose how to export your progress</p>
+      </div>
+
+      <div class="export-options" style="display: flex; flex-direction: column; gap: var(--sp-12);">
+        <!-- Visual Card Option -->
+        <button class="export-option" data-type="visual" style="
+          display: flex; align-items: center; gap: var(--sp-16);
+          padding: var(--sp-16); background: var(--surface);
+          border: 0.5px solid var(--border); border-radius: var(--radius-lg);
+          cursor: pointer; transition: border-color 0.15s, background 0.15s;
+          text-align: left; width: 100%;
+        ">
+          <div style="width: 48px; height: 48px; border-radius: var(--radius); background: linear-gradient(135deg, var(--color-iris-violet), var(--color-lavender)); display: flex; align-items: center; justify-content: center; color: var(--color-paper); font-size: 20px;">📸</div>
+          <div style="flex: 1;">
+            <div style="font-size: 15px; font-weight: 590; color: var(--text-heading);">Visual Share Card</div>
+            <div style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">PNG image with stats, progress ring & solved problems — perfect for sharing</div>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-muted);"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+
+        <!-- JSON Option -->
+        <button class="export-option" data-type="json" style="
+          display: flex; align-items: center; gap: var(--sp-16);
+          padding: var(--sp-16); background: var(--surface);
+          border: 0.5px solid var(--border); border-radius: var(--radius-lg);
+          cursor: pointer; transition: border-color 0.15s, background 0.15s;
+          text-align: left; width: 100%;
+        ">
+          <div style="width: 48px; height: 48px; border-radius: var(--radius); background: var(--surface-elevated); display: flex; align-items: center; justify-content: center; color: var(--cta); font-size: 20px;">📄</div>
+          <div style="flex: 1;">
+            <div style="font-size: 15px; font-weight: 590; color: var(--text-heading);">JSON Data</div>
+            <div style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Complete raw data including all problems, timestamps & metadata</div>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-muted);"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  document.body.classList.add("modal-open");
+
+  // Event listeners
+  modal.querySelector("#export-modal-close").addEventListener("click", () => closeExportModal());
+  modal.addEventListener("click", (e) => { if (e.target === modal) closeExportModal(); });
+
+  modal.querySelectorAll(".export-option").forEach(opt => {
+    opt.addEventListener("mouseenter", () => { opt.style.borderColor = "var(--border-strong)"; opt.style.background = "var(--surface-pill)"; });
+    opt.addEventListener("mouseleave", () => { opt.style.borderColor = "var(--border)"; opt.style.background = "var(--surface)"; });
+    opt.addEventListener("click", () => {
+      const type = opt.dataset.type;
+      closeExportModal();
+      if (type === "visual") generateVisualCard(data, completed, attempted, total, percent, recentSolved);
+      else downloadJSON(data);
+    });
+  });
+
+  function closeExportModal() {
+    modal.classList.remove("show");
+    document.body.classList.remove("modal-open");
+    setTimeout(() => modal.remove(), 200);
+  }
+}
+
+function downloadJSON(data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `leetpath-progress-${currentUser.username}-${new Date().toISOString().split("T")[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("Progress exported as JSON!");
+}
+
+function generateVisualCard(data, completed, attempted, total, percent, recentSolved) {
+  showToast("Generating visual card...", "success");
+  
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  
+  // High DPI for crisp image
+  const dpr = window.devicePixelRatio || 2;
+  const width = 800;
+  const height = 1200;
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  canvas.style.width = width + "px";
+  canvas.style.height = height + "px";
+  ctx.scale(dpr, dpr);
+
+  // Colors matching the theme
+  const colors = {
+    bg: "#08090a",
+    surface: "#0f1011",
+    surfaceElevated: "#161718",
+    border: "#23252a",
+    textPrimary: "#e5e5e6",
+    textSecondary: "#d0d6e0",
+    textMuted: "#8a8f98",
+    cta: "#e4f222",
+    ctaText: "#08090a",
+    success: "#27a644",
+    info: "#02b8cc",
+    violet: "#6366f1",
+    lavender: "#8b5cf6",
+    danger: "#eb5757"
+  };
+
+  // Helper functions
+  const drawRoundRect = (x, y, w, h, r) => {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  };
+
+  const wrapText = (text, x, y, maxWidth, lineHeight) => {
+    const words = text.split(" ");
+    let line = "";
+    const lines = [];
+    for (const word of words) {
+      const testLine = line + word + " ";
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && line !== "") {
+        lines.push(line);
+        line = word + " ";
+      } else {
+        line = testLine;
+      }
+    }
+    lines.push(line);
+    lines.forEach((l, i) => ctx.fillText(l, x, y + i * lineHeight));
+    return lines.length * lineHeight;
+  };
+
+  // Background
+  ctx.fillStyle = colors.bg;
+  ctx.fillRect(0, 0, width, height);
+
+  // Subtle grid pattern
+  ctx.strokeStyle = "rgba(255,255,255,0.02)";
+  ctx.lineWidth = 1;
+  for (let x = 0; x < width; x += 40) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+  }
+  for (let y = 0; y < height; y += 40) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+  }
+
+  // Top accent bar
+  const gradient = ctx.createLinearGradient(0, 0, width, 0);
+  gradient.addColorStop(0, colors.violet);
+  gradient.addColorStop(1, colors.lavender);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, 6);
+
+  // Header
+  let y = 60;
+  ctx.fillStyle = colors.textPrimary;
+  ctx.font = "600 28px Inter, sans-serif";
+  ctx.fillText("LeetPath", 60, y);
+  
+  y += 36;
+  ctx.fillStyle = colors.textMuted;
+  ctx.font = "400 14px Inter, sans-serif";
+  ctx.fillText("DSA Mastery Progress", 60, y);
+
+  // Stats cards row
+  y += 40;
+  const cardWidth = (width - 120 - 32) / 3;
+  const cardHeight = 100;
+  const stats = [
+    { label: "Completed", value: completed, color: colors.success, icon: "✓" },
+    { label: "Attempted", value: attempted, color: colors.info, icon: "⟳" },
+    { label: "Total", value: total, color: colors.violet, icon: "📋" }
+  ];
+
+  stats.forEach((stat, i) => {
+    const x = 60 + i * (cardWidth + 16);
+    drawRoundRect(x, y, cardWidth, cardHeight, 12);
+    ctx.fillStyle = colors.surface;
+    ctx.fill();
+    ctx.strokeStyle = colors.border;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    // Icon
+    ctx.fillStyle = stat.color + "20";
+    ctx.beginPath();
+    ctx.arc(x + cardWidth / 2, y + 30, 22, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.fillStyle = stat.color;
+    ctx.font = "24px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(stat.icon, x + cardWidth / 2, y + 36);
+
+    // Value
+    ctx.fillStyle = colors.textPrimary;
+    ctx.font = "600 28px Inter, sans-serif";
+    ctx.fillText(stat.value.toString(), x + cardWidth / 2, y + 70);
+
+    // Label
+    ctx.fillStyle = colors.textMuted;
+    ctx.font = "400 12px Inter, sans-serif";
+    ctx.fillText(stat.label, x + cardWidth / 2, y + 88);
+  });
+
+  ctx.textAlign = "left";
+
+  // Progress ring section
+  y += cardHeight + 40;
+  const ringCenterX = 160;
+  const ringCenterY = y + 100;
+  const ringRadius = 80;
+  const ringStroke = 12;
+
+  // Ring background
+  ctx.beginPath();
+  ctx.arc(ringCenterX, ringCenterY, ringRadius, 0, Math.PI * 2);
+  ctx.strokeStyle = colors.border;
+  ctx.lineWidth = ringStroke;
+  ctx.stroke();
+
+  // Ring progress
+  const progressAngle = (percent / 100) * Math.PI * 2;
+  const progressGradient = ctx.createLinearGradient(ringCenterX - ringRadius, ringCenterY, ringCenterX + ringRadius, ringCenterY);
+  progressGradient.addColorStop(0, colors.violet);
+  progressGradient.addColorStop(1, colors.lavender);
+  
+  ctx.beginPath();
+  ctx.arc(ringCenterX, ringCenterY, ringRadius, -Math.PI / 2, -Math.PI / 2 + progressAngle);
+  ctx.strokeStyle = progressGradient;
+  ctx.lineWidth = ringStroke;
+  ctx.lineCap = "round";
+  ctx.stroke();
+
+  // Ring center text
+  ctx.fillStyle = colors.textPrimary;
+  ctx.font = "600 36px Inter, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(percent + "%", ringCenterX, ringCenterY + 12);
+  ctx.fillStyle = colors.textMuted;
+  ctx.font = "400 12px Inter, sans-serif";
+  ctx.fillText("Complete", ringCenterX, ringCenterY + 32);
+  ctx.textAlign = "left";
+
+  // Right side of progress section - details
+  const detailX = ringCenterX + ringRadius + 40;
+  let detailY = y + 20;
+  
+  ctx.fillStyle = colors.textPrimary;
+  ctx.font = "600 20px Inter, sans-serif";
+  ctx.fillText("Your Progress", detailX, detailY);
+  
+  detailY += 32;
+  ctx.fillStyle = colors.textSecondary;
+  ctx.font = "400 15px Inter, sans-serif";
+  ctx.fillText(`${completed} of ${total} problems solved`, detailX, detailY);
+  
+  detailY += 28;
+  // Progress bar
+  const barWidth = width - detailX - 60;
+  const barHeight = 8;
+  ctx.fillStyle = colors.border;
+  drawRoundRect(detailX, detailY, barWidth, barHeight, 4);
+  ctx.fill();
+  
+  ctx.fillStyle = colors.cta;
+  drawRoundRect(detailX, detailY, barWidth * (percent / 100), barHeight, 4);
+  ctx.fill();
+  
+  detailY += 24;
+  ctx.fillStyle = colors.textMuted;
+  ctx.font = "400 12px Inter, sans-serif";
+  ctx.fillText(`${Math.round(percent / 100 * total)}% of the combined Striver + Love Babbar sheets`, detailX, detailY);
+
+  // Streak
+  detailY += 36;
+  ctx.fillStyle = colors.danger + "20";
+  ctx.beginPath();
+  ctx.arc(detailX + 16, detailY + 16, 24, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = colors.danger;
+  ctx.font = "20px Inter, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("🔥", detailX + 16, detailY + 22);
+  ctx.textAlign = "left";
+  ctx.fillStyle = colors.textPrimary;
+  ctx.font = "600 24px Inter, sans-serif";
+  ctx.fillText(streak + " day streak", detailX + 52, detailY + 26);
+  ctx.fillStyle = colors.textMuted;
+  ctx.font = "400 12px Inter, sans-serif";
+  ctx.fillText("Keep the momentum going!", detailX + 52, detailY + 42);
+
+  // Recent solved problems
+  y += 220;
+  ctx.fillStyle = colors.textPrimary;
+  ctx.font = "600 20px Inter, sans-serif";
+  ctx.fillText("Recently Solved", 60, y);
+  
+  y += 32;
+  if (recentSolved.length === 0) {
+    ctx.fillStyle = colors.textMuted;
+    ctx.font = "400 14px Inter, sans-serif";
+    ctx.fillText("No problems solved yet. Start your journey!", 60, y + 40);
+  } else {
+    recentSolved.forEach((prob, i) => {
+      if (i >= 8) return; // Show max 8
+      const itemY = y + i * 52;
+      
+      // Card background
+      drawRoundRect(60, itemY, width - 120, 44, 8);
+      ctx.fillStyle = colors.surface;
+      ctx.fill();
+      ctx.strokeStyle = colors.border;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+
+      // Problem number
+      ctx.fillStyle = colors.textMuted;
+      ctx.font = "400 12px Inter, sans-serif";
+      ctx.fillText("#" + prob.id, 80, itemY + 18);
+
+      // Problem name
+      ctx.fillStyle = colors.textPrimary;
+      ctx.font = "500 14px Inter, sans-serif";
+      const maxNameWidth = width - 300;
+      let name = prob.name;
+      if (ctx.measureText(name).width > maxNameWidth) {
+        while (ctx.measureText(name + "...").width > maxNameWidth && name.length > 0) {
+          name = name.slice(0, -1);
+        }
+        name += "...";
+      }
+      ctx.fillText(name, 130, itemY + 18);
+
+      // Difficulty badge
+      const diffColors = { "Easy": colors.success, "Medium": colors.violet, "Hard": colors.danger };
+      const diffColor = diffColors[prob.difficulty] || colors.textMuted;
+      const diffX = width - 180;
+      drawRoundRect(diffX, itemY + 8, 100, 28, 6);
+      ctx.fillStyle = diffColor + "20";
+      ctx.fill();
+      ctx.fillStyle = diffColor;
+      ctx.font = "500 11px Inter, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(prob.difficulty, diffX + 50, itemY + 25);
+      ctx.textAlign = "left";
+
+      // Topic tags (first 2)
+      const topics = (prob.topics || []).slice(0, 2);
+      let topicX = diffX - 10;
+      topics.forEach(topic => {
+        const topicText = topic.replace(/([A-Z])/g, " $1").trim().split(" ").map(w => w[0].toUpperCase() + w.slice(1)).join(" ");
+        const topicWidth = ctx.measureText(topicText).width + 16;
+        topicX -= topicWidth + 6;
+        drawRoundRect(topicX, itemY + 8, topicWidth, 28, 6);
+        ctx.fillStyle = colors.surfaceElevated;
+        ctx.fill();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+        ctx.fillStyle = colors.textSecondary;
+        ctx.font = "400 10px Inter, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(topicText, topicX + topicWidth / 2, itemY + 24);
+        ctx.textAlign = "left";
+      });
+    });
+  }
+
+  // Footer
+  y = height - 80;
+  ctx.fillStyle = colors.textMuted;
+  ctx.font = "400 11px Inter, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("Generated with LeetPath • " + new Date().toLocaleDateString(), width / 2, y);
+  ctx.fillText("leetpath.vercel.app", width / 2, y + 20);
+  ctx.textAlign = "left";
+
+  // Watermark logo
+  ctx.fillStyle = colors.violet;
+  ctx.beginPath();
+  ctx.arc(width - 50, height - 50, 20, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = colors.ctaText;
+  ctx.font = "600 20px Inter, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("⚡", width - 50, height - 44);
+  ctx.textAlign = "left";
+
+  // Download
+  canvas.toBlob((blob) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `leetpath-progress-${currentUser.username}-${new Date().toISOString().split("T")[0]}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Visual progress card saved as PNG!");
+  }, "image/png", 1.0);
 }
 
 async function resetProgress() {
