@@ -97,6 +97,88 @@
     </div>
 
     <!-- Main App (Hidden until authenticated) -->
+    <!-- Landing Page — shown to guests before they enter the dashboard -->
+    <div class="landing-page" id="landing-page">
+        <nav class="landing-nav">
+            <div class="landing-nav-inner">
+                <div class="logo">
+                    <span class="logo-mark" aria-hidden="true">⚡</span>
+                    <span class="logo-name">LeetPath</span>
+                </div>
+                <div class="landing-nav-links">
+                    <a href="#features">Features</a>
+                    <a href="#sheets">Problem Sheets</a>
+                </div>
+                <button class="btn btn-ghost" id="landing-signin-btn">Sign In</button>
+            </div>
+        </nav>
+
+        <header class="landing-hero">
+            <span class="hero-badge"><span class="hero-badge-dot"></span>New: Full LeetCode History Sync &amp; Activity Calendar</span>
+            <h1 class="hero-title">Master DSA with <span class="hero-accent">400+</span> Curated Problems</h1>
+            <p class="hero-subtitle">The only tracker that combines Striver's A2Z Sheet and Love Babbar's DSA Sheet with LeetCode sync, streak tracking, and a GitHub-style activity calendar. Stop managing spreadsheets. Start solving.</p>
+            <button class="btn btn-primary btn-lg" id="landing-start-btn">Start Free</button>
+            <div class="hero-trust">
+                <span>Trusted by engineers</span>
+                <span class="hero-trust-item">📈 LeetCode Verified</span>
+                <span class="hero-trust-item">⏱️ Real-time Sync</span>
+                <span class="hero-trust-item">🛡️ Privacy First</span>
+            </div>
+        </header>
+
+        <section class="landing-features" id="features">
+            <span class="features-eyebrow">FEATURES</span>
+            <h2 class="features-title">Everything you need to master DSA</h2>
+            <p class="features-subtitle">Built by engineers who've been through the grind. Every feature exists because we needed it ourselves.</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">📋</span>
+                    <h3>Dual Sheet Coverage</h3>
+                    <p>Striver's A2Z Sheet + Love Babbar's DSA Sheet — deduplicated into 400+ unique problems with topic tags, difficulty, and company frequency.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🔄</span>
+                    <h3>LeetCode Auto-Sync</h3>
+                    <p>Connect your LeetCode account once. Click "Sync Now" to pull your latest submissions. For full history, paste your session cookie — we'll backfill everything.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🔥</span>
+                    <h3>Streak &amp; Activity Calendar</h3>
+                    <p>GitHub-style contribution heatmap shows your solving pattern. Daily streak counter keeps you accountable. A banner reminds you when you're about to break one.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🎯</span>
+                    <h3>Smart Filtering &amp; Search</h3>
+                    <p>Filter by topic, status, and difficulty. Search across problem names, companies, and topics. ⌘K to focus search instantly.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📊</span>
+                    <h3>Progress Analytics</h3>
+                    <p>Circular progress ring, completion breakdown, topic-wise progress, day streak. Export your progress as JSON anytime.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">⚡</span>
+                    <h3>Keyboard-First Design</h3>
+                    <p>Navigate with arrow keys, ⌘K for search, Esc to close modals. Every interaction optimized for speed.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-cta" id="sheets">
+            <h2>Ready to actually finish a sheet this time?</h2>
+            <button class="btn btn-primary btn-lg" id="landing-start-btn-2">Start Free — No Card Required</button>
+        </section>
+
+        <footer class="landing-footer">
+            <span>Built by <a href="https://www.linkedin.com/in/abhisek-padhy" target="_blank" rel="noopener">Abhisek Padhy</a></span>
+            <div class="landing-footer-links">
+                <a href="https://github.com/abhisekpadhy2244-dev/Leetpath" target="_blank" rel="noopener">GitHub</a>
+                <a href="https://www.linkedin.com/in/abhisek-padhy" target="_blank" rel="noopener">LinkedIn</a>
+            </div>
+        </footer>
+    </div>
+
     <div class="app-shell" id="app-shell" hidden>
         <!-- Top Bar -->
         <header class="top-bar" role="banner">

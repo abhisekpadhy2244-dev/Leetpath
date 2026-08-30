@@ -47,6 +47,7 @@ window.addEventListener("unhandledrejection", (e) =>
 document.addEventListener("DOMContentLoaded", async () => {
   setupAuth();
   setupApp();
+  setupLanding();
 
   const params = new URLSearchParams(window.location.search);
   if (params.get("error") === "auth_failed") {
@@ -65,11 +66,36 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // The site is always browsable, logged in or not. Signing in is only
-  // ever prompted when the person tries to do something that needs an
-  // account — solving a problem or connecting LeetCode.
-  initApp();
+  if (currentUser) {
+    // Already signed in — skip the landing page entirely.
+    hideLanding();
+    initApp();
+  } else {
+    // Guests see the landing page first. The dashboard is still fully
+    // browsable without an account — "Start Free" just gets them there
+    // faster than scrolling.
+    showLanding();
+  }
 });
+
+function showLanding() {
+  $("landing-page").hidden = false;
+  $("app-shell").hidden = true;
+}
+
+function hideLanding() {
+  $("landing-page").hidden = true;
+}
+
+function setupLanding() {
+  $("landing-signin-btn")?.addEventListener("click", () => openAuth());
+  const enterApp = () => {
+    hideLanding();
+    initApp();
+  };
+  $("landing-start-btn")?.addEventListener("click", enterApp);
+  $("landing-start-btn-2")?.addEventListener("click", enterApp);
+}
 
 // ==================== AUTH ====================
 function setupAuth() {
@@ -236,6 +262,7 @@ function setAuth(data) {
   localStorage.setItem("authToken", data.token);
   localStorage.setItem("user", JSON.stringify(data.user));
   closeAuth();
+  hideLanding();
   initApp();
 }
 
