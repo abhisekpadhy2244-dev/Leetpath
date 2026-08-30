@@ -820,235 +820,146 @@ svg { display: block; }
   .search-wrapper { display: none; }
 }
 
-
 /* ============================================================
-   LANDING PAGE — "Valo" noir observatory system
-   Pure black canvas, weight-300 whisper typography, one
-   violet→blue→teal→lavender gradient used as punctuation only
-   (one headline word, the ring visual, the footer band).
-   Scoped entirely under .landing-page — never touches the app.
+   LANDING PAGE
    ============================================================ */
-.landing-page {
-  min-height: 100vh;
-  background: #000000;
-  color: #ffffff;
-  font-feature-settings: "clig" on, "liga" on, "ss03" on;
+.landing-page { min-height: 100vh; }
 
-  /* ---- Full Valo token set, prefixed --valo- to avoid colliding with
-     the dashboard's own --text-heading / --radius-full / etc, which
-     mean different things in that stylesheet. ---- */
-
-  /* Colors */
-  --valo-void: #000000;
-  --valo-bone: #e5e7eb;
-  --valo-paper: #ffffff;
-  --valo-graphite: #4d4d4d;
-  --valo-spectrum-wash: #1b66f8;
-  --valo-gradient-spectrum-wash: linear-gradient(270deg, rgb(158, 61, 178), rgb(27, 102, 248), rgb(36, 218, 217), rgb(179, 198, 232));
-  --valo-deep-field: #1e233c;
-  --valo-gradient-deep-field: linear-gradient(90deg, rgb(30, 35, 60), rgb(10, 64, 153));
-  --valo-atmospheric-fade: #1951a2;
-  --valo-gradient-atmospheric-fade: linear-gradient(90deg, rgb(25, 81, 162), rgb(112, 218, 180));
-
-  /* Typography — Scale */
-  --valo-text-caption: 10px;
-  --valo-leading-caption: 1.4;
-  --valo-tracking-caption: 1px;
-  --valo-text-body: 15px;
-  --valo-leading-body: 1.63;
-  --valo-text-subheading: 18px;
-  --valo-leading-subheading: 1.4;
-  --valo-text-heading-sm: 24px;
-  --valo-leading-heading-sm: 1.33;
-  --valo-tracking-heading-sm: -0.31px;
-  --valo-text-heading: 38px;
-  --valo-leading-heading: 1.2;
-  --valo-tracking-heading: -0.49px;
-  --valo-text-heading-lg: 60px;
-  --valo-leading-heading-lg: 1.2;
-  --valo-tracking-heading-lg: -0.78px;
-  --valo-text-display: 100px;
-  --valo-leading-display: 1;
-  --valo-tracking-display: -2.7px;
-
-  /* Typography — Weights */
-  --valo-font-weight-light: 300;
-  --valo-font-weight-regular: 400;
-  --valo-font-weight-bold: 700;
-
-  /* Spacing */
-  --valo-spacing-unit: 4px;
-  --valo-spacing-16: 16px;
-  --valo-spacing-20: 20px;
-  --valo-spacing-36: 36px;
-  --valo-spacing-108: 108px;
-  --valo-spacing-216: 216px;
-
-  /* Layout */
-  --valo-page-max-width: 1200px;
-  --valo-section-gap: 45px;
-  --valo-element-gap: 20px;
-
-  /* Border Radius */
-  --valo-radius-full: 9999px;
+.landing-nav {
+  position: sticky; top: 0; z-index: 40;
+  background: rgba(15, 16, 17, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 0.5px solid var(--border);
 }
-
-/* ---- Nav ---- */
-.valo-nav { padding: 7px 0; }
-.valo-nav-inner {
+.landing-nav-inner {
   max-width: 1200px; margin: 0 auto;
   padding: var(--sp-16) var(--sp-24);
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-24);
 }
-.valo-wordmark { font-size: var(--valo-text-heading-sm); font-weight: var(--valo-font-weight-regular); color: var(--valo-paper); letter-spacing: -0.01em; }
-.valo-nav-links { display: flex; gap: 27px; }
-.valo-nav-links a { font-size: 13px; font-weight: var(--valo-font-weight-regular); color: var(--valo-paper); opacity: 0.7; transition: opacity 0.15s; }
-.valo-nav-links a:hover { opacity: 1; }
-.valo-nav-signin {
-  background: none; border: none;
-  font-size: 13px; font-weight: var(--valo-font-weight-regular); color: var(--valo-paper);
-  opacity: 0.85; transition: opacity 0.15s;
-}
-.valo-nav-signin:hover { opacity: 1; }
+.landing-nav-links { display: flex; gap: var(--sp-24); flex: 1; justify-content: center; }
+.landing-nav-links a { font-size: 13px; color: var(--text-secondary); }
+.landing-nav-links a:hover { color: var(--text-primary); }
 
-/* ---- Hero ---- */
-.valo-hero {
-  position: relative;
-  max-width: var(--valo-page-max-width); margin: 0 auto;
-  padding: var(--valo-spacing-108) var(--sp-24) 96px;
-  overflow: hidden;
+.landing-hero {
+  max-width: 900px; margin: 0 auto;
+  padding: 96px var(--sp-24) 64px;
+  text-align: left;
 }
-.valo-hero-content { max-width: 720px; position: relative; z-index: 2; }
-.valo-display {
-  font-size: clamp(40px, 7vw, var(--valo-text-display));
-  font-weight: var(--valo-font-weight-light);
-  line-height: var(--valo-leading-display);
-  letter-spacing: -0.027em;
-  color: var(--valo-paper);
-  margin-bottom: var(--valo-spacing-36);
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--text-secondary);
+  background: var(--surface-ghost);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  margin-bottom: var(--sp-24);
 }
-.valo-accent {
-  background: var(--valo-gradient-spectrum-wash);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+.hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+.hero-title {
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-weight: 590;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--text-heading);
+  margin-bottom: var(--sp-24);
 }
-.valo-subhead {
-  font-size: var(--valo-text-body);
-  font-weight: var(--valo-font-weight-regular);
-  line-height: var(--valo-leading-body);
-  color: var(--valo-bone);
-  max-width: 540px;
-  margin-bottom: var(--sp-48);
-}
-
-/* Circle arrow CTA — the system's only interaction primitive */
-.valo-cta-row { display: flex; align-items: center; gap: var(--valo-element-gap); margin-bottom: var(--sp-48); }
-.valo-cta-row-center { justify-content: center; margin-top: var(--sp-32); }
-.valo-circle-btn {
-  width: 48px; height: 48px; flex-shrink: 0;
-  border-radius: var(--valo-radius-full);
-  border: 1px solid var(--valo-bone);
-  background: transparent;
-  color: var(--valo-paper);
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.2s, transform 0.2s;
-}
-.valo-circle-btn svg { width: 20px; height: 20px; }
-.valo-circle-btn:hover { background: rgba(255,255,255,0.08); transform: translateX(2px); }
-.valo-cta-label { font-size: var(--valo-text-subheading); font-weight: var(--valo-font-weight-regular); color: var(--valo-paper); }
-
-.valo-trust-row {
-  display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-12);
-  font-size: 13px; color: var(--valo-bone); opacity: 0.6;
-}
-.valo-trust-divider { opacity: 0.5; }
-
-/* Floating gradient torus — the page's one saturated-color shape */
-.valo-ring {
-  position: absolute;
-  top: 50%; right: -80px;
-  width: 420px; height: 420px;
-  transform: translateY(-50%);
-  border-radius: 50%;
-  border: 2px solid transparent;
-  background: var(--valo-gradient-spectrum-wash) border-box;
-  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0.55;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.valo-divider { max-width: var(--valo-page-max-width); margin: 0 auto; border-top: 1px solid var(--valo-bone); opacity: 0.15; }
-
-/* ---- Section shell ---- */
-.valo-section { max-width: var(--valo-page-max-width); margin: 0 auto; padding: 96px var(--sp-24); }
-.valo-section-label {
-  display: block;
-  font-size: var(--valo-text-caption); font-weight: var(--valo-font-weight-regular);
-  letter-spacing: var(--valo-tracking-caption); text-transform: uppercase;
-  color: var(--valo-paper);
-  margin-bottom: var(--valo-spacing-16);
-}
-.valo-heading {
-  font-size: clamp(28px, 4vw, var(--valo-text-heading));
-  font-weight: var(--valo-font-weight-light);
-  line-height: var(--valo-leading-heading);
-  letter-spacing: var(--valo-tracking-heading);
-  color: var(--valo-paper);
-  margin-bottom: var(--sp-16);
+.hero-accent { color: var(--cta); }
+.hero-subtitle {
+  font-size: var(--text-body-lg);
+  line-height: 1.5;
+  color: var(--text-secondary);
   max-width: 640px;
+  margin-bottom: var(--sp-32);
 }
-.valo-section-intro {
-  font-size: 15px; line-height: 1.63; color: var(--valo-bone);
-  max-width: 540px; margin-bottom: 64px;
+.hero-trust {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-20);
+  margin-top: var(--sp-32);
+  font-size: 12px; color: var(--text-muted);
+}
+.hero-trust-item { display: flex; align-items: center; gap: 6px; }
+
+.landing-features {
+  max-width: 1200px; margin: 0 auto;
+  padding: 64px var(--sp-24);
+  text-align: center;
+}
+.features-eyebrow {
+  font-size: 12px; font-weight: 590; letter-spacing: 0.08em;
+  color: var(--cta); text-transform: uppercase;
+}
+.features-title {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 590;
+  color: var(--text-heading);
+  margin: var(--sp-12) 0 var(--sp-12);
+  letter-spacing: -0.015em;
+}
+.features-subtitle {
+  font-size: 14px; color: var(--text-muted);
+  max-width: 520px; margin: 0 auto var(--sp-48);
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-20);
+  text-align: left;
+}
+.feature-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--sp-24);
+}
+.feature-icon { font-size: 1.6rem; display: block; margin-bottom: var(--sp-16); }
+.feature-card h3 { font-size: 15px; font-weight: 510; color: var(--text-heading); margin-bottom: var(--sp-8); }
+.feature-card p { font-size: 13px; line-height: 1.6; color: var(--text-muted); }
+
+.landing-cta {
+  max-width: 700px; margin: 0 auto;
+  padding: 64px var(--sp-24) 96px;
+  text-align: center;
+}
+.landing-cta h2 {
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+  font-weight: 590;
+  color: var(--text-heading);
+  margin-bottom: var(--sp-24);
+  letter-spacing: -0.015em;
 }
 
-/* ---- Numbered content blocks ---- */
-.valo-numbered-list { display: flex; flex-direction: column; gap: 23px; max-width: 780px; }
-.valo-numbered-item { display: grid; grid-template-columns: 48px 1fr; gap: var(--sp-24); }
-.valo-numeral { font-size: 13px; font-weight: var(--valo-font-weight-regular); letter-spacing: var(--valo-tracking-caption); color: var(--valo-bone); padding-top: 3px; }
-.valo-numbered-item h3 { font-size: var(--valo-text-subheading); font-weight: var(--valo-font-weight-bold); color: var(--valo-paper); margin-bottom: 14px; }
-.valo-numbered-item p { font-size: var(--valo-text-body); font-weight: var(--valo-font-weight-regular); line-height: var(--valo-leading-body); color: var(--valo-bone); }
-
-.valo-cta-section { text-align: center; }
-.valo-cta-section .valo-heading { margin: 0 auto var(--sp-16); text-align: center; }
-
-/* ---- Footer band — the one moment the canvas leaves pure black ---- */
-.valo-footer {
-  background: var(--valo-gradient-deep-field);
-  position: relative;
+.landing-footer {
+  max-width: 1200px; margin: 0 auto;
+  padding: 48px var(--sp-24) var(--sp-32);
+  border-top: 0.5px solid var(--border);
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-12);
+  text-align: center;
+  font-size: 12px; color: var(--text-muted);
 }
-.valo-footer::after {
-  content: "";
-  position: absolute; inset: 0;
-  background: var(--valo-gradient-atmospheric-fade);
-  opacity: 0.35;
-  pointer-events: none;
+.landing-footer-tagline { font-size: 13px; color: var(--text-secondary); font-weight: 510; }
+.landing-footer-credit { display: flex; align-items: center; gap: var(--sp-8); font-size: 13px; color: var(--text-muted); }
+.landing-footer-credit strong { color: var(--text-primary); font-weight: 510; }
+.footer-icon-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px;
+  min-width: 24px; min-height: 24px;
+  max-width: 24px; max-height: 24px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  background: var(--surface-ghost);
+  border: 0.5px solid var(--border);
+  transition: color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
 }
-.valo-footer-inner {
-  position: relative; z-index: 1;
-  max-width: var(--valo-page-max-width); margin: 0 auto;
-  padding: var(--sp-32) var(--sp-24);
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-  gap: var(--sp-16);
-}
-.valo-footer-wordmark { font-size: var(--valo-text-heading-sm); font-weight: var(--valo-font-weight-regular); color: var(--valo-paper); }
-.valo-footer-links {
-  display: flex; flex-wrap: wrap; align-items: center; gap: var(--valo-spacing-20);
-  font-size: 13px; font-weight: 400; color: var(--valo-paper);
-}
-.valo-footer-links a {
-  display: flex; align-items: center; color: var(--valo-paper);
-  opacity: 0.85; transition: opacity 0.15s;
-}
-.valo-footer-links a:hover { opacity: 1; }
+.footer-icon-btn svg { width: 14px; height: 14px; max-width: 14px; max-height: 14px; }
+.footer-icon-linkedin:hover { color: #0a66c2; border-color: #0a66c2; }
+.footer-icon-github:hover { color: var(--text-heading); border-color: var(--border-strong); }
+.landing-footer a { color: var(--text-secondary); }
+.landing-footer a:hover { color: var(--cta); }
+.landing-footer-links { display: flex; gap: var(--sp-20); margin-top: 4px; }
 
 @media (max-width: 800px) {
-  .valo-nav-links { display: none; }
-  .valo-ring { width: 260px; height: 260px; right: -60px; opacity: 0.35; }
-  .valo-numbered-item { grid-template-columns: 32px 1fr; gap: var(--sp-16); }
-  .valo-footer-inner { flex-direction: column; align-items: flex-start; }
+  .features-grid { grid-template-columns: 1fr; }
+  .landing-nav-links { display: none; }
+  .landing-hero { padding-top: 64px; text-align: center; }
+  .hero-subtitle { margin-left: auto; margin-right: auto; }
 }
