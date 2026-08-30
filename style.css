@@ -941,13 +941,16 @@ svg { display: block; }
 .footer-icon-btn {
   display: flex; align-items: center; justify-content: center;
   width: 24px; height: 24px;
+  min-width: 24px; min-height: 24px;
+  max-width: 24px; max-height: 24px;
   border-radius: 6px;
   color: var(--text-muted);
   background: var(--surface-ghost);
   border: 0.5px solid var(--border);
   transition: color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
 }
-.footer-icon-btn svg { width: 14px; height: 14px; }
+.footer-icon-btn svg { width: 14px; height: 14px; max-width: 14px; max-height: 14px; }
 .footer-icon-linkedin:hover { color: #0a66c2; border-color: #0a66c2; }
 .footer-icon-github:hover { color: var(--text-heading); border-color: var(--border-strong); }
 .landing-footer a { color: var(--text-secondary); }
