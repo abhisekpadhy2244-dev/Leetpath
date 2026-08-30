@@ -929,14 +929,30 @@ svg { display: block; }
 
 .landing-footer {
   max-width: 1200px; margin: 0 auto;
-  padding: var(--sp-24);
+  padding: 48px var(--sp-24) var(--sp-32);
   border-top: 0.5px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-12);
+  text-align: center;
   font-size: 12px; color: var(--text-muted);
 }
+.landing-footer-tagline { font-size: 13px; color: var(--text-secondary); font-weight: 510; }
+.landing-footer-credit { display: flex; align-items: center; gap: var(--sp-8); font-size: 13px; color: var(--text-muted); }
+.landing-footer-credit strong { color: var(--text-primary); font-weight: 510; }
+.footer-icon-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  background: var(--surface-ghost);
+  border: 0.5px solid var(--border);
+  transition: color 0.15s, border-color 0.15s;
+}
+.footer-icon-btn svg { width: 14px; height: 14px; }
+.footer-icon-linkedin:hover { color: #0a66c2; border-color: #0a66c2; }
+.footer-icon-github:hover { color: var(--text-heading); border-color: var(--border-strong); }
 .landing-footer a { color: var(--text-secondary); }
 .landing-footer a:hover { color: var(--cta); }
-.landing-footer-links { display: flex; gap: var(--sp-20); }
+.landing-footer-links { display: flex; gap: var(--sp-20); margin-top: 4px; }
 
 @media (max-width: 800px) {
   .features-grid { grid-template-columns: 1fr; }
