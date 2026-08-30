@@ -57,20 +57,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (authToken) {
     const restored = await hydrateCurrentUser();
     if (!restored) {
-      // token was stale/invalid — clear it and redirect to landing
+      // token was stale/invalid — clear it and continue as a guest
       authToken = null;
       currentUser = null;
       localStorage.removeItem("authToken");
       localStorage.removeItem("user");
-      window.location.href = 'landing.html';
-      return;
     }
-  } else {
-    // No token - redirect to landing page
-    window.location.href = 'landing.html';
-    return;
   }
 
+  // The site is always browsable, logged in or not. Signing in is only
+  // ever prompted when the person tries to do something that needs an
+  // account — solving a problem or connecting LeetCode.
   initApp();
 });
 
@@ -98,43 +95,6 @@ function setupAuth() {
   $("auth-modal").addEventListener("click", (e) => {
     if (e.target === $("auth-modal")) closeAuth();
   });
-
-  // Password toggle
-  document.querySelectorAll(".password-toggle").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const input = btn.previousElementSibling;
-      const isPassword = input.type === "password";
-      input.type = isPassword ? "text" : "password";
-      btn.textContent = isPassword ? "🙈" : "👁";
-    });
-  });
-
-  // Password strength meter
-  const registerPassword = $("register-password");
-  const strengthEl = $("register-password-strength");
-  const strengthFill = $("register-strength-fill");
-  const strengthText = $("register-strength-text");
-  if (registerPassword && strengthEl) {
-    registerPassword.addEventListener("input", () => {
-      const val = registerPassword.value;
-      if (val.length === 0) {
-        strengthEl.hidden = true;
-        return;
-      }
-      strengthEl.hidden = false;
-      let score = 0;
-      if (val.length >= 8) score++;
-      if (/[A-Z]/.test(val)) score++;
-      if (/[a-z]/.test(val)) score++;
-      if (/[0-9]/.test(val)) score++;
-      if (/[^A-Za-z0-9]/.test(val)) score++;
-      const levels = [{ class: "weak", text: "Weak" }, { class: "fair", text: "Fair" }, { class: "good", text: "Good" }];
-      const level = levels[Math.min(Math.floor(score / 2), 2)];
-      strengthFill.className = "strength-fill " + level.class;
-      strengthText.textContent = level.text;
-      strengthText.style.color = level.class === "weak" ? "var(--danger)" : level.class === "fair" ? "var(--color-fog)" : "var(--success)";
-    });
-  }
 
   $("login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -285,7 +245,9 @@ function logout() {
   allProblems = [];
   localStorage.removeItem("authToken");
   localStorage.removeItem("user");
-  window.location.href = 'landing.html';
+  renderTopics();
+  showToast("Signed out", "success");
+  openAuth();
 }
 
 // Wraps an async click handler so rapid/repeated clicks while the previous
@@ -352,6 +314,8 @@ async function initApp() {
   applyFilters();
   if (currentUser) {
     await loadActivity();
+  } else {
+    renderGuestState();
   }
 }
 
@@ -405,19 +369,17 @@ function renderTopics() {
       allProblems.length,
       "all",
       currentTopic === "all",
-      0
     );
     list.appendChild(allItem);
 
     Object.entries(topicCounts)
       .sort((a, b) => b[1] - a[1])
-      .forEach(([topic, count], index) => {
+      .forEach(([topic, count]) => {
         const item = createTopicItem(
           formatTopicName(topic),
           count,
           topic,
           topic === currentTopic,
-          index + 1
         );
         list.appendChild(item);
       });
@@ -426,13 +388,12 @@ function renderTopics() {
   }
 }
 
-function createTopicItem(name, count, topic, isActive, index) {
+function createTopicItem(name, count, topic, isActive) {
   const li = document.createElement("li");
   li.className = "topic-item" + (isActive ? " active" : "");
   li.dataset.topic = topic;
   li.setAttribute("role", "option");
   li.setAttribute("aria-selected", isActive ? "true" : "false");
-  li.style.animationDelay = `${Math.min(index * 30, 300)}ms`;
   li.innerHTML = `<span class="topic-name">${escapeHtml(name)}</span><span class="topic-count">${count}</span>`;
   li.addEventListener("click", () => selectTopic(topic));
   return li;
@@ -521,7 +482,7 @@ function updateStatCardActive(statusFilter) {
       (id === "card-completed" && statusFilter === "completed") ||
       (id === "card-attempted" && statusFilter === "attempted") ||
       (id === "card-total" && statusFilter === "all");
-    el.classList.toggle("stat-item-active", isActive);
+    el.classList.toggle("stat-card-active", isActive);
   });
 }
 
@@ -655,19 +616,6 @@ async function markAttemptedOnOpen(problemId) {
 }
 
 // ==================== STATS & PROGRESS ====================
-function animateValue(el, start, end, duration = 400) {
-  if (!el) return;
-  const startTime = performance.now();
-  function step(now) {
-    const progress = Math.min((now - startTime) / duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
-    const current = Math.round(start + (end - start) * eased);
-    el.textContent = current;
-    if (progress < 1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
-
 function updateStats() {
   try {
     const completed = allProblems.filter(
@@ -679,10 +627,10 @@ function updateStats() {
     const total = allProblems.length;
     const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-    animateValue($("stat-completed"), parseInt($("stat-completed").textContent) || 0, completed);
-    animateValue($("stat-attempted"), parseInt($("stat-attempted").textContent) || 0, attempted);
-    animateValue($("stat-total"), parseInt($("stat-total").textContent) || 0, total);
-    animateValue($("stat-streak"), parseInt($("stat-streak").textContent) || 0, streak);
+    $("stat-completed").textContent = completed;
+    $("stat-attempted").textContent = attempted;
+    $("stat-total").textContent = total;
+    $("stat-streak").textContent = streak;
 
     $("overview-percent").textContent = percent + "%";
     $("overview-fraction").textContent = `${completed} / ${total}`;
@@ -691,9 +639,9 @@ function updateStats() {
       circumference * (1 - percent / 100);
     $("overview-bar").style.width = percent + "%";
 
-    animateValue($("bp-completed"), parseInt($("bp-completed").textContent) || 0, completed);
-    animateValue($("bp-attempted"), parseInt($("bp-attempted").textContent) || 0, attempted);
-    animateValue($("bp-remaining"), parseInt($("bp-remaining").textContent) || 0, total - completed - attempted);
+    $("bp-completed").textContent = completed;
+    $("bp-attempted").textContent = attempted;
+    $("bp-remaining").textContent = total - completed - attempted;
     $("overview-title").textContent =
       currentTopic === "all" ? "All Problems" : formatTopicName(currentTopic);
   } catch (error) {
@@ -785,10 +733,10 @@ function updateUI() {
 
 function updateLeetCodeStats(data) {
   try {
-    animateValue($("lc-total"), parseInt($("lc-total").textContent) || 0, data.totalSolved || 0);
-    animateValue($("lc-easy"), parseInt($("lc-easy").textContent) || 0, data.easySolved || 0);
-    animateValue($("lc-medium"), parseInt($("lc-medium").textContent) || 0, data.mediumSolved || 0);
-    animateValue($("lc-hard"), parseInt($("lc-hard").textContent) || 0, data.hardSolved || 0);
+    $("lc-total").textContent = data.totalSolved || 0;
+    $("lc-easy").textContent = data.easySolved || 0;
+    $("lc-medium").textContent = data.mediumSolved || 0;
+    $("lc-hard").textContent = data.hardSolved || 0;
   } catch (error) {
     reportUnexpectedError(error);
   }
@@ -963,447 +911,22 @@ async function exportProgress() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Export failed");
 
-    // Show export options modal
-    showExportModal(data);
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `leetpath-progress-${currentUser.username}-${new Date().toISOString().split("T")[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Progress exported!");
   } catch (error) {
     console.error("Export error:", error);
     showToast(error.message, "error");
   } finally {
     btn.disabled = false;
   }
-}
-
-function showExportModal(data) {
-  // Remove any existing modal
-  const existing = document.getElementById("export-modal");
-  if (existing) existing.remove();
-
-  const completed = allProblems.filter(p => p.status === "completed").length;
-  const attempted = allProblems.filter(p => p.status === "attempted").length;
-  const total = allProblems.length;
-  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-  const solvedProblems = allProblems.filter(p => p.status === "completed");
-  const recentSolved = solvedProblems.slice(-10).reverse(); // Last 10 solved
-
-  const modal = document.createElement("div");
-  modal.id = "export-modal";
-  modal.className = "modal-overlay show";
-  modal.innerHTML = `
-    <div class="modal-container" style="max-width: 520px; padding: var(--sp-24);">
-      <button class="modal-close" id="export-modal-close" aria-label="Close" style="top: var(--sp-12); right: var(--sp-12);">✕</button>
-      
-      <div class="modal-header" style="margin-bottom: var(--sp-20);">
-        <h2 style="font-size: var(--text-subheading); font-weight: 590; color: var(--text-heading);">Export Progress</h2>
-        <p style="font-size: 13px; color: var(--text-muted); margin-top: var(--sp-8);">Choose how to export your progress</p>
-      </div>
-
-      <div class="export-options" style="display: flex; flex-direction: column; gap: var(--sp-12);">
-        <!-- Visual Card Option -->
-        <button class="export-option" data-type="visual" style="
-          display: flex; align-items: center; gap: var(--sp-16);
-          padding: var(--sp-16); background: var(--surface);
-          border: 0.5px solid var(--border); border-radius: var(--radius-lg);
-          cursor: pointer; transition: border-color 0.15s, background 0.15s;
-          text-align: left; width: 100%;
-        ">
-          <div style="width: 48px; height: 48px; border-radius: var(--radius); background: linear-gradient(135deg, var(--color-iris-violet), var(--color-lavender)); display: flex; align-items: center; justify-content: center; color: var(--color-paper); font-size: 20px;">📸</div>
-          <div style="flex: 1;">
-            <div style="font-size: 15px; font-weight: 590; color: var(--text-heading);">Visual Share Card</div>
-            <div style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">PNG image with stats, progress ring & solved problems — perfect for sharing</div>
-          </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-muted);"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
-
-        <!-- JSON Option -->
-        <button class="export-option" data-type="json" style="
-          display: flex; align-items: center; gap: var(--sp-16);
-          padding: var(--sp-16); background: var(--surface);
-          border: 0.5px solid var(--border); border-radius: var(--radius-lg);
-          cursor: pointer; transition: border-color 0.15s, background 0.15s;
-          text-align: left; width: 100%;
-        ">
-          <div style="width: 48px; height: 48px; border-radius: var(--radius); background: var(--surface-elevated); display: flex; align-items: center; justify-content: center; color: var(--cta); font-size: 20px;">📄</div>
-          <div style="flex: 1;">
-            <div style="font-size: 15px; font-weight: 590; color: var(--text-heading);">JSON Data</div>
-            <div style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Complete raw data including all problems, timestamps & metadata</div>
-          </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-muted);"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-  document.body.classList.add("modal-open");
-
-  // Event listeners
-  modal.querySelector("#export-modal-close").addEventListener("click", () => closeExportModal());
-  modal.addEventListener("click", (e) => { if (e.target === modal) closeExportModal(); });
-
-  modal.querySelectorAll(".export-option").forEach(opt => {
-    opt.addEventListener("mouseenter", () => { opt.style.borderColor = "var(--border-strong)"; opt.style.background = "var(--surface-pill)"; });
-    opt.addEventListener("mouseleave", () => { opt.style.borderColor = "var(--border)"; opt.style.background = "var(--surface)"; });
-    opt.addEventListener("click", () => {
-      const type = opt.dataset.type;
-      closeExportModal();
-      if (type === "visual") generateVisualCard(data, completed, attempted, total, percent, recentSolved);
-      else downloadJSON(data);
-    });
-  });
-
-  function closeExportModal() {
-    modal.classList.remove("show");
-    document.body.classList.remove("modal-open");
-    setTimeout(() => modal.remove(), 200);
-  }
-}
-
-function downloadJSON(data) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `leetpath-progress-${currentUser.username}-${new Date().toISOString().split("T")[0]}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast("Progress exported as JSON!");
-}
-
-function generateVisualCard(data, completed, attempted, total, percent, recentSolved) {
-  showToast("Generating visual card...", "success");
-  
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  
-  // High DPI for crisp image
-  const dpr = window.devicePixelRatio || 2;
-  const width = 800;
-  const height = 1200;
-  canvas.width = width * dpr;
-  canvas.height = height * dpr;
-  canvas.style.width = width + "px";
-  canvas.style.height = height + "px";
-  ctx.scale(dpr, dpr);
-
-  // Colors matching the theme
-  const colors = {
-    bg: "#08090a",
-    surface: "#0f1011",
-    surfaceElevated: "#161718",
-    border: "#23252a",
-    textPrimary: "#e5e5e6",
-    textSecondary: "#d0d6e0",
-    textMuted: "#8a8f98",
-    cta: "#e4f222",
-    ctaText: "#08090a",
-    success: "#27a644",
-    info: "#02b8cc",
-    violet: "#6366f1",
-    lavender: "#8b5cf6",
-    danger: "#eb5757"
-  };
-
-  // Helper functions
-  const drawRoundRect = (x, y, w, h, r) => {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
-  };
-
-  const wrapText = (text, x, y, maxWidth, lineHeight) => {
-    const words = text.split(" ");
-    let line = "";
-    const lines = [];
-    for (const word of words) {
-      const testLine = line + word + " ";
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && line !== "") {
-        lines.push(line);
-        line = word + " ";
-      } else {
-        line = testLine;
-      }
-    }
-    lines.push(line);
-    lines.forEach((l, i) => ctx.fillText(l, x, y + i * lineHeight));
-    return lines.length * lineHeight;
-  };
-
-  // Background
-  ctx.fillStyle = colors.bg;
-  ctx.fillRect(0, 0, width, height);
-
-  // Subtle grid pattern
-  ctx.strokeStyle = "rgba(255,255,255,0.02)";
-  ctx.lineWidth = 1;
-  for (let x = 0; x < width; x += 40) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
-  }
-  for (let y = 0; y < height; y += 40) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
-  }
-
-  // Top accent bar
-  const gradient = ctx.createLinearGradient(0, 0, width, 0);
-  gradient.addColorStop(0, colors.violet);
-  gradient.addColorStop(1, colors.lavender);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, width, 6);
-
-  // Header
-  let y = 60;
-  ctx.fillStyle = colors.textPrimary;
-  ctx.font = "600 28px Inter, sans-serif";
-  ctx.fillText("LeetPath", 60, y);
-  
-  y += 36;
-  ctx.fillStyle = colors.textMuted;
-  ctx.font = "400 14px Inter, sans-serif";
-  ctx.fillText("DSA Mastery Progress", 60, y);
-
-  // Stats cards row
-  y += 40;
-  const cardWidth = (width - 120 - 32) / 3;
-  const cardHeight = 100;
-  const stats = [
-    { label: "Completed", value: completed, color: colors.success, icon: "✓" },
-    { label: "Attempted", value: attempted, color: colors.info, icon: "⟳" },
-    { label: "Total", value: total, color: colors.violet, icon: "📋" }
-  ];
-
-  stats.forEach((stat, i) => {
-    const x = 60 + i * (cardWidth + 16);
-    drawRoundRect(x, y, cardWidth, cardHeight, 12);
-    ctx.fillStyle = colors.surface;
-    ctx.fill();
-    ctx.strokeStyle = colors.border;
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
-
-    // Icon
-    ctx.fillStyle = stat.color + "20";
-    ctx.beginPath();
-    ctx.arc(x + cardWidth / 2, y + 30, 22, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.fillStyle = stat.color;
-    ctx.font = "24px Inter, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(stat.icon, x + cardWidth / 2, y + 36);
-
-    // Value
-    ctx.fillStyle = colors.textPrimary;
-    ctx.font = "600 28px Inter, sans-serif";
-    ctx.fillText(stat.value.toString(), x + cardWidth / 2, y + 70);
-
-    // Label
-    ctx.fillStyle = colors.textMuted;
-    ctx.font = "400 12px Inter, sans-serif";
-    ctx.fillText(stat.label, x + cardWidth / 2, y + 88);
-  });
-
-  ctx.textAlign = "left";
-
-  // Progress ring section
-  y += cardHeight + 40;
-  const ringCenterX = 160;
-  const ringCenterY = y + 100;
-  const ringRadius = 80;
-  const ringStroke = 12;
-
-  // Ring background
-  ctx.beginPath();
-  ctx.arc(ringCenterX, ringCenterY, ringRadius, 0, Math.PI * 2);
-  ctx.strokeStyle = colors.border;
-  ctx.lineWidth = ringStroke;
-  ctx.stroke();
-
-  // Ring progress
-  const progressAngle = (percent / 100) * Math.PI * 2;
-  const progressGradient = ctx.createLinearGradient(ringCenterX - ringRadius, ringCenterY, ringCenterX + ringRadius, ringCenterY);
-  progressGradient.addColorStop(0, colors.violet);
-  progressGradient.addColorStop(1, colors.lavender);
-  
-  ctx.beginPath();
-  ctx.arc(ringCenterX, ringCenterY, ringRadius, -Math.PI / 2, -Math.PI / 2 + progressAngle);
-  ctx.strokeStyle = progressGradient;
-  ctx.lineWidth = ringStroke;
-  ctx.lineCap = "round";
-  ctx.stroke();
-
-  // Ring center text
-  ctx.fillStyle = colors.textPrimary;
-  ctx.font = "600 36px Inter, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText(percent + "%", ringCenterX, ringCenterY + 12);
-  ctx.fillStyle = colors.textMuted;
-  ctx.font = "400 12px Inter, sans-serif";
-  ctx.fillText("Complete", ringCenterX, ringCenterY + 32);
-  ctx.textAlign = "left";
-
-  // Right side of progress section - details
-  const detailX = ringCenterX + ringRadius + 40;
-  let detailY = y + 20;
-  
-  ctx.fillStyle = colors.textPrimary;
-  ctx.font = "600 20px Inter, sans-serif";
-  ctx.fillText("Your Progress", detailX, detailY);
-  
-  detailY += 32;
-  ctx.fillStyle = colors.textSecondary;
-  ctx.font = "400 15px Inter, sans-serif";
-  ctx.fillText(`${completed} of ${total} problems solved`, detailX, detailY);
-  
-  detailY += 28;
-  // Progress bar
-  const barWidth = width - detailX - 60;
-  const barHeight = 8;
-  ctx.fillStyle = colors.border;
-  drawRoundRect(detailX, detailY, barWidth, barHeight, 4);
-  ctx.fill();
-  
-  ctx.fillStyle = colors.cta;
-  drawRoundRect(detailX, detailY, barWidth * (percent / 100), barHeight, 4);
-  ctx.fill();
-  
-  detailY += 24;
-  ctx.fillStyle = colors.textMuted;
-  ctx.font = "400 12px Inter, sans-serif";
-  ctx.fillText(`${Math.round(percent / 100 * total)}% of the combined Striver + Love Babbar sheets`, detailX, detailY);
-
-  // Streak
-  detailY += 36;
-  ctx.fillStyle = colors.danger + "20";
-  ctx.beginPath();
-  ctx.arc(detailX + 16, detailY + 16, 24, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = colors.danger;
-  ctx.font = "20px Inter, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("🔥", detailX + 16, detailY + 22);
-  ctx.textAlign = "left";
-  ctx.fillStyle = colors.textPrimary;
-  ctx.font = "600 24px Inter, sans-serif";
-  ctx.fillText(streak + " day streak", detailX + 52, detailY + 26);
-  ctx.fillStyle = colors.textMuted;
-  ctx.font = "400 12px Inter, sans-serif";
-  ctx.fillText("Keep the momentum going!", detailX + 52, detailY + 42);
-
-  // Recent solved problems
-  y += 220;
-  ctx.fillStyle = colors.textPrimary;
-  ctx.font = "600 20px Inter, sans-serif";
-  ctx.fillText("Recently Solved", 60, y);
-  
-  y += 32;
-  if (recentSolved.length === 0) {
-    ctx.fillStyle = colors.textMuted;
-    ctx.font = "400 14px Inter, sans-serif";
-    ctx.fillText("No problems solved yet. Start your journey!", 60, y + 40);
-  } else {
-    recentSolved.forEach((prob, i) => {
-      if (i >= 8) return; // Show max 8
-      const itemY = y + i * 52;
-      
-      // Card background
-      drawRoundRect(60, itemY, width - 120, 44, 8);
-      ctx.fillStyle = colors.surface;
-      ctx.fill();
-      ctx.strokeStyle = colors.border;
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
-
-      // Problem number
-      ctx.fillStyle = colors.textMuted;
-      ctx.font = "400 12px Inter, sans-serif";
-      ctx.fillText("#" + prob.id, 80, itemY + 18);
-
-      // Problem name
-      ctx.fillStyle = colors.textPrimary;
-      ctx.font = "500 14px Inter, sans-serif";
-      const maxNameWidth = width - 300;
-      let name = prob.name;
-      if (ctx.measureText(name).width > maxNameWidth) {
-        while (ctx.measureText(name + "...").width > maxNameWidth && name.length > 0) {
-          name = name.slice(0, -1);
-        }
-        name += "...";
-      }
-      ctx.fillText(name, 130, itemY + 18);
-
-      // Difficulty badge
-      const diffColors = { "Easy": colors.success, "Medium": colors.violet, "Hard": colors.danger };
-      const diffColor = diffColors[prob.difficulty] || colors.textMuted;
-      const diffX = width - 180;
-      drawRoundRect(diffX, itemY + 8, 100, 28, 6);
-      ctx.fillStyle = diffColor + "20";
-      ctx.fill();
-      ctx.fillStyle = diffColor;
-      ctx.font = "500 11px Inter, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(prob.difficulty, diffX + 50, itemY + 25);
-      ctx.textAlign = "left";
-
-      // Topic tags (first 2)
-      const topics = (prob.topics || []).slice(0, 2);
-      let topicX = diffX - 10;
-      topics.forEach(topic => {
-        const topicText = topic.replace(/([A-Z])/g, " $1").trim().split(" ").map(w => w[0].toUpperCase() + w.slice(1)).join(" ");
-        const topicWidth = ctx.measureText(topicText).width + 16;
-        topicX -= topicWidth + 6;
-        drawRoundRect(topicX, itemY + 8, topicWidth, 28, 6);
-        ctx.fillStyle = colors.surfaceElevated;
-        ctx.fill();
-        ctx.strokeStyle = colors.border;
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
-        ctx.fillStyle = colors.textSecondary;
-        ctx.font = "400 10px Inter, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText(topicText, topicX + topicWidth / 2, itemY + 24);
-        ctx.textAlign = "left";
-      });
-    });
-  }
-
-  // Footer
-  y = height - 80;
-  ctx.fillStyle = colors.textMuted;
-  ctx.font = "400 11px Inter, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("Generated with LeetPath • " + new Date().toLocaleDateString(), width / 2, y);
-  ctx.fillText("leetpath.vercel.app", width / 2, y + 20);
-  ctx.textAlign = "left";
-
-  // Watermark logo
-  ctx.fillStyle = colors.violet;
-  ctx.beginPath();
-  ctx.arc(width - 50, height - 50, 20, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = colors.ctaText;
-  ctx.font = "600 20px Inter, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("⚡", width - 50, height - 44);
-  ctx.textAlign = "left";
-
-  // Download
-  canvas.toBlob((blob) => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `leetpath-progress-${currentUser.username}-${new Date().toISOString().split("T")[0]}.png`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast("Visual progress card saved as PNG!");
-  }, "image/png", 1.0);
 }
 
 async function resetProgress() {
@@ -1549,8 +1072,8 @@ function showToast(message, type = "success") {
   requestAnimationFrame(() => toast.classList.add("show"));
 
   setTimeout(() => {
-    toast.classList.add("removing");
-    toast.addEventListener("animationend", () => toast.remove(), { once: true });
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 350);
   }, 3000);
 }
 
@@ -1643,33 +1166,17 @@ function setupApp() {
     searchDebounce = setTimeout(applyFilters, 200);
   });
 
-  // Density selector
-  const densitySelector = $("density-selector");
-  if (densitySelector) {
-    const savedDensity = localStorage.getItem("layout-density") || "comfortable";
-    document.documentElement.setAttribute("data-density", savedDensity);
-    densitySelector.querySelectorAll(".density-btn").forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.density === savedDensity);
-      btn.addEventListener("click", () => {
-        densitySelector.querySelectorAll(".density-btn").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        document.documentElement.setAttribute("data-density", btn.dataset.density);
-        localStorage.setItem("layout-density", btn.dataset.density);
-      });
-    });
-  }
-
-  // Clickable stat items -> filter by status
-  document.querySelectorAll(".stat-item[data-filter]").forEach((item) => {
+  // Clickable stat cards -> filter by status
+  document.querySelectorAll(".stat-card[data-filter]").forEach((card) => {
     const activate = () => {
-      $("filter-status").value = item.dataset.filter;
+      $("filter-status").value = card.dataset.filter;
       applyFilters();
       $("problems-tbody")
         .closest(".card")
         ?.scrollIntoView({ behavior: "smooth", block: "start" });
     };
-    item.addEventListener("click", activate);
-    item.addEventListener("keydown", (e) => {
+    card.addEventListener("click", activate);
+    card.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         activate();

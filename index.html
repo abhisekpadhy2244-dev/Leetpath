@@ -54,10 +54,7 @@
                 </div>
                 <div class="form-group">
                     <label for="login-password">Password</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
-                        <button type="button" class="password-toggle" aria-label="Show password">👁</button>
-                    </div>
+                    <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
                 </div>
                 <button type="submit" class="btn btn-primary btn-full">Sign In</button>
             </form>
@@ -82,14 +79,7 @@
                 </div>
                 <div class="form-group">
                     <label for="register-password">Password</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="register-password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password">
-                        <button type="button" class="password-toggle" aria-label="Show password">👁</button>
-                    </div>
-                    <div class="password-strength" id="register-password-strength" hidden>
-                        <div class="strength-bar"><div class="strength-fill" id="register-strength-fill"></div></div>
-                        <span class="strength-text" id="register-strength-text"></span>
-                    </div>
+                    <input type="password" id="register-password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password">
                 </div>
                 <button type="submit" class="btn btn-primary btn-full">Create Account</button>
             </form>
@@ -120,12 +110,9 @@
                         <kbd class="search-shortcut">⌘K</kbd>
                     </div>
 
-                    <!-- Layout Density Selector -->
-                    <div class="density-selector" id="density-selector" style="display: flex; align-items: center; gap: 4px; background: var(--surface-ghost); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 2px;">
-                        <button class="density-btn active" data-density="comfortable" aria-label="Comfortable layout" style="padding: 6px 10px; background: none; border: none; border-radius: 4px; color: var(--text-secondary); font-size: 12px; cursor: pointer; transition: all 0.15s;">Comfortable</button>
-                        <button class="density-btn" data-density="compact" aria-label="Compact layout" style="padding: 6px 10px; background: none; border: none; border-radius: 4px; color: var(--text-secondary); font-size: 12px; cursor: pointer; transition: all 0.15s;">Compact</button>
-                        <button class="density-btn" data-density="spacious" aria-label="Spacious layout" style="padding: 6px 10px; background: none; border: none; border-radius: 4px; color: var(--text-secondary); font-size: 12px; cursor: pointer; transition: all 0.15s;">Spacious</button>
-                    </div>
+                    <!-- Guest CTAs — shown only when logged out -->
+                    <button class="btn-guest-connect" id="btn-connect-lc-header" hidden>Connect LeetCode</button>
+                    <button class="btn-guest-signin" id="btn-signin-header" hidden>Sign In</button>
 
                     <!-- User Menu -->
                     <div class="user-menu" id="user-menu">
@@ -265,6 +252,38 @@
 
                 <!-- Content Area -->
                 <div class="content-area">
+                    <!-- Header Stats -->
+                    <div class="stats-row" role="region" aria-label="Quick Stats">
+                        <div class="stat-card" id="card-completed" data-filter="completed" role="button" tabindex="0" aria-label="Filter by completed problems">
+                            <span class="stat-icon completed" aria-hidden="true">✓</span>
+                            <div class="stat-info">
+                                <span class="stat-value" id="stat-completed">0</span>
+                                <span class="stat-label">Completed</span>
+                            </div>
+                        </div>
+                        <div class="stat-card" id="card-attempted" data-filter="attempted" role="button" tabindex="0" aria-label="Filter by attempted problems">
+                            <span class="stat-icon attempted" aria-hidden="true">⟳</span>
+                            <div class="stat-info">
+                                <span class="stat-value" id="stat-attempted">0</span>
+                                <span class="stat-label">Attempted</span>
+                            </div>
+                        </div>
+                        <div class="stat-card" id="card-total" data-filter="all" role="button" tabindex="0" aria-label="Show all problems">
+                            <span class="stat-icon total" aria-hidden="true">📋</span>
+                            <div class="stat-info">
+                                <span class="stat-value" id="stat-total">400</span>
+                                <span class="stat-label">Total Problems</span>
+                            </div>
+                        </div>
+                        <div class="stat-card streak">
+                            <span class="stat-icon streak-icon" aria-hidden="true">🔥</span>
+                            <div class="stat-info">
+                                <span class="stat-value" id="stat-streak">0</span>
+                                <span class="stat-label">Day Streak</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Streak reminder banner (shown only when today's activity is missing) -->
                     <div class="streak-banner" id="streak-banner" hidden role="alert">
                         <span class="streak-banner-icon" aria-hidden="true">🔥</span>
@@ -275,56 +294,21 @@
                         <button class="streak-banner-dismiss" id="streak-banner-dismiss" aria-label="Dismiss for today">✕</button>
                     </div>
 
-                    <!-- Top Section: Calendar + Quick Stats -->
-                    <div class="top-section" style="display: grid; grid-template-columns: 1fr 320px; gap: var(--sp-20);">
-                        <!-- Activity Calendar -->
-                        <div class="card calendar-card" id="calendar-card">
-                            <div class="card-header">
-                                <h2 class="card-title">Activity</h2>
-                                <span class="calendar-streak-summary" id="calendar-streak-summary"></span>
-                            </div>
-                            <div class="calendar-heatmap" id="calendar-heatmap" role="img" aria-label="Problem-solving activity calendar"></div>
-                            <div class="calendar-legend">
-                                <span>Less</span>
-                                <span class="legend-swatch level-0"></span>
-                                <span class="legend-swatch level-1"></span>
-                                <span class="legend-swatch level-2"></span>
-                                <span class="legend-swatch level-3"></span>
-                                <span class="legend-swatch level-4"></span>
-                                <span>More</span>
-                            </div>
+                    <!-- Activity Calendar -->
+                    <div class="card calendar-card" id="calendar-card">
+                        <div class="card-header">
+                            <h2 class="card-title">Activity</h2>
+                            <span class="calendar-streak-summary" id="calendar-streak-summary"></span>
                         </div>
-
-                        <!-- Quick Stats Panel -->
-                        <div class="card stats-panel" style="display: flex; flex-direction: column; gap: var(--sp-16);">
-                            <div class="stat-item" id="card-completed" data-filter="completed" role="button" tabindex="0" aria-label="Filter by completed problems" style="display: flex; align-items: center; gap: var(--sp-12); padding: var(--sp-12); background: var(--surface-ghost); border: 0.5px solid var(--border); border-radius: var(--radius); transition: border-color 0.15s, background 0.15s;">
-                                <span class="stat-icon completed" aria-hidden="true" style="width: 40px; height: 40px; font-size: 16px;">✓</span>
-                                <div class="stat-info" style="flex: 1;">
-                                    <span class="stat-value" id="stat-completed" style="font-size: 28px;">0</span>
-                                    <span class="stat-label" style="font-size: 13px;">Completed</span>
-                                </div>
-                            </div>
-                            <div class="stat-item" id="card-attempted" data-filter="attempted" role="button" tabindex="0" aria-label="Filter by attempted problems" style="display: flex; align-items: center; gap: var(--sp-12); padding: var(--sp-12); background: var(--surface-ghost); border: 0.5px solid var(--border); border-radius: var(--radius); transition: border-color 0.15s, background 0.15s;">
-                                <span class="stat-icon attempted" aria-hidden="true" style="width: 40px; height: 40px; font-size: 16px;">⟳</span>
-                                <div class="stat-info" style="flex: 1;">
-                                    <span class="stat-value" id="stat-attempted" style="font-size: 28px;">0</span>
-                                    <span class="stat-label" style="font-size: 13px;">Attempted</span>
-                                </div>
-                            </div>
-                            <div class="stat-item" id="card-total" data-filter="all" role="button" tabindex="0" aria-label="Show all problems" style="display: flex; align-items: center; gap: var(--sp-12); padding: var(--sp-12); background: var(--surface-ghost); border: 0.5px solid var(--border); border-radius: var(--radius); transition: border-color 0.15s, background 0.15s;">
-                                <span class="stat-icon total" aria-hidden="true" style="width: 40px; height: 40px; font-size: 16px;">📋</span>
-                                <div class="stat-info" style="flex: 1;">
-                                    <span class="stat-value" id="stat-total" style="font-size: 28px;">400</span>
-                                    <span class="stat-label" style="font-size: 13px;">Total Problems</span>
-                                </div>
-                            </div>
-                            <div class="stat-item streak" style="display: flex; align-items: center; gap: var(--sp-12); padding: var(--sp-12); background: var(--danger-bg); border: 0.5px solid var(--danger); border-radius: var(--radius);">
-                                <span class="stat-icon streak-icon" aria-hidden="true" style="width: 40px; height: 40px; font-size: 16px;">🔥</span>
-                                <div class="stat-info" style="flex: 1;">
-                                    <span class="stat-value" id="stat-streak" style="font-size: 28px; color: var(--danger);">0</span>
-                                    <span class="stat-label" style="font-size: 13px; color: var(--danger);">Day Streak</span>
-                                </div>
-                            </div>
+                        <div class="calendar-heatmap" id="calendar-heatmap" role="img" aria-label="Problem-solving activity calendar"></div>
+                        <div class="calendar-legend">
+                            <span>Less</span>
+                            <span class="legend-swatch level-0"></span>
+                            <span class="legend-swatch level-1"></span>
+                            <span class="legend-swatch level-2"></span>
+                            <span class="legend-swatch level-3"></span>
+                            <span class="legend-swatch level-4"></span>
+                            <span>More</span>
                         </div>
                     </div>
 
@@ -380,16 +364,6 @@
         </div>
     </dialog>
 
-    <script>
-        // Redirect to landing page if not authenticated
-        (function() {
-            const token = localStorage.getItem('authToken');
-            const user = localStorage.getItem('user');
-            if (!token || !user) {
-                window.location.href = 'landing.html';
-            }
-        })();
-    </script>
     <script src="script.js"></script>
 </body>
 </html>
