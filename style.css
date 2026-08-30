@@ -79,6 +79,53 @@
   --shadow-focus: 0 0 0 3px rgba(228, 242, 34, 0.18);
 }
 
+/* ============================================================
+   LIGHT THEME — same tokens, inverted surfaces. Accent colors
+   (acid-lime, pulse-green, coral-red, etc.) stay the same for
+   brand consistency; only the neutral scale flips.
+   ============================================================ */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-ghost: rgba(8, 9, 10, 0.03);
+  --surface-pill: rgba(8, 9, 10, 0.06);
+  --border: #e4e4e0;
+  --border-strong: #c9c9c3;
+
+  --text-primary: #1c1d1f;
+  --text-heading: #08090a;
+  --text-secondary: #4a4b4f;
+  --text-tertiary: #6b6c70;
+  --text-muted: #8a8b8f;
+
+  --cta-text: #08090a;
+
+  --success-bg: rgba(39, 166, 68, 0.1);
+  --info-bg: rgba(2, 184, 204, 0.1);
+  --danger-bg: rgba(235, 87, 87, 0.1);
+  --tag-violet-bg: rgba(99, 102, 241, 0.1);
+  --tag-lavender-bg: rgba(139, 92, 246, 0.1);
+
+  --shadow-card: rgb(228, 228, 224) 0px 0px 0px 1px inset;
+  --shadow-elevated: rgba(20, 20, 20, 0.12) 0px 8px 32px 0px;
+  --shadow-focus: 0 0 0 3px rgba(180, 195, 0, 0.25);
+}
+
+/* Ambient grid/orbs read differently on a light background */
+[data-theme="light"] .grid-overlay {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+}
+[data-theme="light"] .top-bar {
+  background: rgba(247, 247, 245, 0.85);
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: #d4d4cf; }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: #b8b8b2; }
+
 /* ============ Reset ============ */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -228,6 +275,29 @@ svg { display: block; }
   border: 0.5px solid var(--border);
 }
 .btn-guest-signin:hover, .btn-guest-connect:hover { opacity: 0.85; }
+
+/* ============ Theme toggle ============ */
+.theme-toggle {
+  position: relative;
+  width: 34px; height: 34px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface-ghost);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  transition: border-color 0.15s, color 0.15s;
+}
+.theme-toggle:hover { border-color: var(--border-strong); color: var(--text-primary); }
+.theme-icon {
+  position: absolute;
+  width: 16px; height: 16px;
+  transition: opacity 0.2s ease, transform 0.3s ease;
+}
+.theme-icon-sun { opacity: 0; transform: rotate(-90deg) scale(0.6); }
+.theme-icon-moon { opacity: 1; transform: rotate(0) scale(1); }
+[data-theme="light"] .theme-icon-sun { opacity: 1; transform: rotate(0) scale(1); }
+[data-theme="light"] .theme-icon-moon { opacity: 0; transform: rotate(90deg) scale(0.6); }
 
 /* ============ User menu ============ */
 .user-menu { position: relative; }

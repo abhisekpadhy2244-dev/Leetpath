@@ -710,13 +710,14 @@ function updateUI() {
       $("leetcode-stats").hidden = false;
       if (currentUser.leetcodeData)
         updateLeetCodeStats(currentUser.leetcodeData);
-      
+
       // Show saved session status
       const savedSessionStatus = $("saved-session-status");
       const sessionInput = $("lc-session-input");
       if (currentUser.leetcodeSessionCookie) {
         savedSessionStatus.hidden = false;
-        sessionInput.placeholder = "Session cookie saved — enter new one to update";
+        sessionInput.placeholder =
+          "Session cookie saved — enter new one to update";
         sessionInput.value = "";
       } else {
         savedSessionStatus.hidden = true;
@@ -888,7 +889,7 @@ async function clearSavedSession() {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Failed to clear session");
-    
+
     currentUser.leetcodeSessionCookie = null;
     localStorage.setItem("user", JSON.stringify(currentUser));
     updateUI();
@@ -1115,6 +1116,14 @@ function setAvatar(el, url) {
 
 // ==================== GLOBAL SETUP ====================
 function setupApp() {
+  // Theme toggle
+  $("theme-toggle")?.addEventListener("click", () => {
+    const html = document.documentElement;
+    const next = html.getAttribute("data-theme") === "light" ? "dark" : "light";
+    html.setAttribute("data-theme", next);
+    localStorage.setItem("leetpath_theme", next);
+  });
+
   // Guest CTAs — only visible when logged out
   $("btn-signin-header")?.addEventListener("click", () => openAuth());
   $("btn-connect-lc-header")?.addEventListener("click", () =>
@@ -1145,7 +1154,10 @@ function setupApp() {
   $("btn-toggle-full-sync").addEventListener("click", toggleFullSyncPanel);
   $("btn-full-sync-help").addEventListener("click", toggleFullSyncHelp);
   $("btn-full-sync").addEventListener("click", guardAsyncClick(runFullSync));
-  $("btn-clear-session").addEventListener("click", guardAsyncClick(clearSavedSession));
+  $("btn-clear-session").addEventListener(
+    "click",
+    guardAsyncClick(clearSavedSession),
+  );
   $("streak-banner-dismiss")?.addEventListener("click", () => {
     localStorage.setItem(
       "leetpath_banner_dismissed",
