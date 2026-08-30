@@ -99,91 +99,119 @@
     <!-- Main App (Hidden until authenticated) -->
     <!-- Landing Page — shown to guests before they enter the dashboard -->
     <div class="landing-page" id="landing-page">
-        <nav class="landing-nav">
-            <div class="landing-nav-inner">
-                <div class="logo">
-                    <span class="logo-mark" aria-hidden="true">⚡</span>
-                    <span class="logo-name">LeetPath</span>
-                </div>
-                <div class="landing-nav-links">
+        <nav class="valo-nav">
+            <div class="valo-nav-inner">
+                <span class="valo-wordmark">LeetPath</span>
+                <div class="valo-nav-links">
                     <a href="#features">Features</a>
                     <a href="#sheets">Problem Sheets</a>
                 </div>
-                <button class="btn btn-ghost" id="landing-signin-btn">Sign In</button>
+                <button class="valo-nav-signin" id="landing-signin-btn">Sign In</button>
             </div>
         </nav>
 
-        <header class="landing-hero">
-            <span class="hero-badge"><span class="hero-badge-dot"></span>New: Full LeetCode History Sync &amp; Activity Calendar</span>
-            <h1 class="hero-title">Master DSA with <span class="hero-accent">400+</span> Curated Problems</h1>
-            <p class="hero-subtitle">The only tracker that combines Striver's A2Z Sheet and Love Babbar's DSA Sheet with LeetCode sync, streak tracking, and a GitHub-style activity calendar. Stop managing spreadsheets. Start solving.</p>
-            <button class="btn btn-primary btn-lg" id="landing-start-btn">Start Free</button>
-            <div class="hero-trust">
-                <span>Trusted by engineers</span>
-                <span class="hero-trust-item">📈 LeetCode Verified</span>
-                <span class="hero-trust-item">⏱️ Real-time Sync</span>
-                <span class="hero-trust-item">🛡️ Privacy First</span>
+        <header class="valo-hero">
+            <div class="valo-ring" aria-hidden="true"></div>
+            <div class="valo-hero-content">
+                <h1 class="valo-display">Master DSA with <span class="valo-accent">400+</span> curated problems</h1>
+                <p class="valo-subhead">The only tracker that combines Striver's A2Z Sheet and Love Babbar's DSA Sheet with LeetCode sync, streak tracking, and a GitHub-style activity calendar. Stop managing spreadsheets. Start solving.</p>
+                <div class="valo-cta-row">
+                    <button class="valo-circle-btn" id="landing-start-btn" aria-label="Start free">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </button>
+                    <span class="valo-cta-label">Start free — no card required</span>
+                </div>
+                <div class="valo-trust-row">
+                    <span>Trusted by engineers</span>
+                    <span class="valo-trust-divider">·</span>
+                    <span>LeetCode verified</span>
+                    <span class="valo-trust-divider">·</span>
+                    <span>Real-time sync</span>
+                    <span class="valo-trust-divider">·</span>
+                    <span>Privacy first</span>
+                </div>
             </div>
         </header>
 
-        <section class="landing-features" id="features">
-            <span class="features-eyebrow">FEATURES</span>
-            <h2 class="features-title">Everything you need to master DSA</h2>
-            <p class="features-subtitle">Built by engineers who've been through the grind. Every feature exists because we needed it ourselves.</p>
+        <div class="valo-divider"></div>
 
-            <div class="features-grid">
-                <div class="feature-card">
-                    <span class="feature-icon">📋</span>
-                    <h3>Dual Sheet Coverage</h3>
-                    <p>Striver's A2Z Sheet + Love Babbar's DSA Sheet — deduplicated into 400+ unique problems with topic tags, difficulty, and company frequency.</p>
+        <section class="valo-section" id="features">
+            <span class="valo-section-label">Features</span>
+            <h2 class="valo-heading">Everything you need to master DSA</h2>
+            <p class="valo-section-intro">Built by engineers who've been through the grind. Every feature exists because we needed it ourselves.</p>
+
+            <div class="valo-numbered-list">
+                <div class="valo-numbered-item">
+                    <span class="valo-numeral">01</span>
+                    <div>
+                        <h3>Dual Sheet Coverage</h3>
+                        <p>Striver's A2Z Sheet + Love Babbar's DSA Sheet — deduplicated into 400+ unique problems with topic tags, difficulty, and company frequency.</p>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <span class="feature-icon">🔄</span>
-                    <h3>LeetCode Auto-Sync</h3>
-                    <p>Connect your LeetCode account once. Click "Sync Now" to pull your latest submissions. For full history, paste your session cookie — we'll backfill everything.</p>
+                <div class="valo-numbered-item">
+                    <span class="valo-numeral">02</span>
+                    <div>
+                        <h3>LeetCode Auto-Sync</h3>
+                        <p>Connect your LeetCode account once. Click "Sync Now" to pull your latest submissions. For full history, paste your session cookie — we'll backfill everything.</p>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <span class="feature-icon">🔥</span>
-                    <h3>Streak &amp; Activity Calendar</h3>
-                    <p>GitHub-style contribution heatmap shows your solving pattern. Daily streak counter keeps you accountable. A banner reminds you when you're about to break one.</p>
+                <div class="valo-numbered-item">
+                    <span class="valo-numeral">03</span>
+                    <div>
+                        <h3>Streak &amp; Activity Calendar</h3>
+                        <p>A GitHub-style contribution heatmap shows your solving pattern. A daily streak counter keeps you accountable, and a banner reminds you before you break one.</p>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <span class="feature-icon">🎯</span>
-                    <h3>Smart Filtering &amp; Search</h3>
-                    <p>Filter by topic, status, and difficulty. Search across problem names, companies, and topics. ⌘K to focus search instantly.</p>
+                <div class="valo-numbered-item">
+                    <span class="valo-numeral">04</span>
+                    <div>
+                        <h3>Smart Filtering &amp; Search</h3>
+                        <p>Filter by topic, status, and difficulty. Search across problem names, companies, and topics — ⌘K to focus search instantly.</p>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <span class="feature-icon">📊</span>
-                    <h3>Progress Analytics</h3>
-                    <p>Circular progress ring, completion breakdown, topic-wise progress, day streak. Export your progress as JSON anytime.</p>
+                <div class="valo-numbered-item">
+                    <span class="valo-numeral">05</span>
+                    <div>
+                        <h3>Progress Analytics</h3>
+                        <p>A circular progress ring, completion breakdown, and topic-wise progress. Export your progress as JSON anytime.</p>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <span class="feature-icon">⚡</span>
-                    <h3>Keyboard-First Design</h3>
-                    <p>Navigate with arrow keys, ⌘K for search, Esc to close modals. Every interaction optimized for speed.</p>
+                <div class="valo-numbered-item">
+                    <span class="valo-numeral">06</span>
+                    <div>
+                        <h3>Keyboard-First Design</h3>
+                        <p>Navigate with arrow keys, ⌘K for search, Esc to close modals. Every interaction is optimized for speed.</p>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="landing-cta" id="sheets">
-            <h2>Ready to actually finish a sheet this time?</h2>
-            <button class="btn btn-primary btn-lg" id="landing-start-btn-2">Start Free — No Card Required</button>
+        <section class="valo-section valo-cta-section" id="sheets">
+            <h2 class="valo-heading">Ready to actually finish a sheet this time?</h2>
+            <div class="valo-cta-row valo-cta-row-center">
+                <button class="valo-circle-btn" id="landing-start-btn-2" aria-label="Start free">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+                <span class="valo-cta-label">Start free — no card required</span>
+            </div>
         </section>
 
-        <footer class="landing-footer">
-            <p class="landing-footer-tagline">Built for engineers by engineers.</p>
-            <div class="landing-footer-credit">
-                <span>Made by <strong>Abhisek Padhy</strong></span>
-                <a href="https://www.linkedin.com/in/abhisekpadhy" target="_blank" rel="noopener" class="footer-icon-btn footer-icon-linkedin" aria-label="LinkedIn profile">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.03-1.85-3.03-1.85 0-2.14 1.45-2.14 2.94v5.66H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
-                </a>
-                <a href="https://github.com/abhisekpadhy2244-dev" target="_blank" rel="noopener" class="footer-icon-btn footer-icon-github" aria-label="GitHub profile">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.03-.01-1.87-2.78.62-3.37-1.19-3.37-1.19-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.63.07-.63 1 .07 1.53 1.05 1.53 1.05.89 1.57 2.34 1.11 2.91.85.09-.67.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.73 0 0 .84-.28 2.75 1.05a9.32 9.32 0 0 1 5.01 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.42.2 2.47.1 2.73.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.26 10.26 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
-                </a>
-            </div>
-            <div class="landing-footer-links">
-                <a href="https://github.com/abhisekpadhy2244-dev/Leetpath" target="_blank" rel="noopener">GitHub Repo</a>
-                <a href="https://www.linkedin.com/in/abhisekpadhy" target="_blank" rel="noopener">LinkedIn</a>
+        <footer class="valo-footer">
+            <div class="valo-footer-inner">
+                <span class="valo-footer-wordmark">LeetPath</span>
+                <div class="valo-footer-links">
+                    <span>Built for engineers by engineers</span>
+                    <span class="valo-trust-divider">·</span>
+                    <span>Made by Abhisek Padhy</span>
+                    <a href="https://www.linkedin.com/in/abhisekpadhy" target="_blank" rel="noopener" aria-label="LinkedIn profile">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.03-1.85-3.03-1.85 0-2.14 1.45-2.14 2.94v5.66H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+                    </a>
+                    <a href="https://github.com/abhisekpadhy2244-dev" target="_blank" rel="noopener" aria-label="GitHub profile">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.03-.01-1.87-2.78.62-3.37-1.19-3.37-1.19-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.63.07-.63 1 .07 1.53 1.05 1.53 1.05.89 1.57 2.34 1.11 2.91.85.09-.67.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.73 0 0 .84-.28 2.75 1.05a9.32 9.32 0 0 1 5.01 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.42.2 2.47.1 2.73.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.26 10.26 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
+                    </a>
+                    <span class="valo-trust-divider">·</span>
+                    <span>© 2026 LeetPath</span>
+                </div>
             </div>
         </footer>
     </div>
