@@ -161,8 +161,13 @@ Issues and PRs welcome. Areas needing help:
 
 ---
 ## Liveworking demo.
-![alt text](<Screenshot 2026-08-17 233248.png>)
-![alt text](<Screenshot 2026-08-20 230253.png>)
+![Sign-in](<Screenshot 2026-09-03 165451.png>)
+![The Dashboard(light&dark)](<Screenshot 2026-09-03 165520.png>)
+![The ai analyzer](<Screenshot 2026-09-03 165541.png>) 
+![The ai analyzer](<Screenshot 2026-09-03 165532.png>)
+![leetcode account sync](<Screenshot 2026-09-03 165713.png>)
+![AI mentor(askanything)](<Screenshot 2026-09-03 165613.png>)
+
 ## License
 
 MIT — use freely, attribution appreciated.
