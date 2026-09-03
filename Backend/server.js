@@ -75,6 +75,7 @@ app.use(express.static(path.join(__dirname, "..")));
 const authRoutes = require("./routes/auth");
 const progressRoutes = require("./routes/progress");
 const leetcodeRoutes = require("./routes/leetcode");
+const aiRoutes = require("./routes/ai");
 const googleAuthRoutes = require("./routes/google-auth");
 
 // Rate limiting
@@ -90,6 +91,7 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/leetcode", leetcodeRoutes);
+app.use("/api/ai", aiRoutes);
 app.use("/api/auth/google", googleAuthRoutes);
 
 // Serve index.html for root

@@ -160,7 +160,9 @@ Issues and PRs welcome. Areas needing help:
 - Test coverage
 
 ---
-
+## Liveworking demo.
+![alt text](<Screenshot 2026-08-17 233248.png>)
+![alt text](<Screenshot 2026-08-20 230253.png>)
 ## License
 
 MIT — use freely, attribution appreciated.

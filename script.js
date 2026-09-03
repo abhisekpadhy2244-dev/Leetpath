@@ -47,7 +47,9 @@ window.addEventListener("unhandledrejection", (e) =>
 document.addEventListener("DOMContentLoaded", async () => {
   setupAuth();
   setupApp();
+  setupAiChat();
   setupLanding();
+  setupAiMentor();
 
   const params = new URLSearchParams(window.location.search);
   if (params.get("error") === "auth_failed") {
@@ -1255,4 +1257,338 @@ function setupApp() {
 
 function connectLeetCodeFull() {
   connectLeetCode();
+}
+
+// ==================== AI MENTOR ====================
+const AI_CACHE_KEY = "leetpath_ai_analysis";
+const AI_PLAN_CACHE_KEY = "leetpath_ai_weekly_plan";
+
+function getSolvedCount() {
+  return allProblems.filter((p) => p.status === "completed").length;
+}
+
+function getCachedAnalysis() {
+  try {
+    const raw = localStorage.getItem(AI_CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function shouldUseCachedAnalysis(cache) {
+  if (!cache) return false;
+  const solvedNow = getSolvedCount();
+  const solvedDelta = solvedNow - cache.solvedCountAtAnalysis;
+  return solvedDelta < 5; // re-analyze only after 5+ new solves
+}
+
+async function analyzeProgress() {
+  const cache = getCachedAnalysis();
+  if (shouldUseCachedAnalysis(cache)) {
+    renderAnalysisModal(cache.data, true);
+    return;
+  }
+
+  if (!currentUser) {
+    openAuth("Sign in to get your personalized AI analysis.");
+    return;
+  }
+
+  showAiLoadingModal("Analyzing your solving patterns...");
+  try {
+    const res = await api(`${API_URL}/api/ai/analyze`, { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Analysis failed");
+
+    localStorage.setItem(
+      AI_CACHE_KEY,
+      JSON.stringify({
+        data,
+        timestamp: Date.now(),
+        solvedCountAtAnalysis: getSolvedCount(),
+      }),
+    );
+    renderAnalysisModal(data, false);
+  } catch (error) {
+    closeAiModal();
+    showToast(error.message, "error");
+  }
+}
+
+function showAiLoadingModal(message) {
+  const modal = $("ai-modal");
+  const body = $("ai-modal-body");
+  body.innerHTML = `
+    <div class="ai-loading">
+      <div class="ai-loading-spinner"></div>
+      <p>${escapeHtml(message)}</p>
+    </div>
+  `;
+  modal.classList.add("show");
+  document.body.classList.add("modal-open");
+}
+
+function closeAiModal() {
+  $("ai-modal").classList.remove("show");
+  document.body.classList.remove("modal-open");
+}
+
+function renderAnalysisModal(data, fromCache) {
+  const body = $("ai-modal-body");
+  const scoreColor =
+    data.readinessScore >= 70
+      ? "var(--success)"
+      : data.readinessScore >= 40
+        ? "var(--info)"
+        : "var(--danger)";
+
+  body.innerHTML = `
+    <div class="ai-report">
+      ${fromCache ? '<span class="ai-cache-badge">Cached result — solve 5 more problems to refresh</span>' : ""}
+
+      <div class="ai-score-section">
+        <div class="ai-score-ring" style="--score: ${data.readinessScore}; --score-color: ${scoreColor}">
+          <span class="ai-score-value">${data.readinessScore}</span>
+        </div>
+        <div>
+          <h3>Interview Readiness</h3>
+          <p class="ai-confidence">${escapeHtml(data.confidenceBoost)}</p>
+        </div>
+      </div>
+
+      <div class="ai-badges-row">
+        <div class="ai-badge-group">
+          <h4>💪 Strengths</h4>
+          ${data.strengths.map((s) => `<span class="ai-badge ai-badge-strength">${escapeHtml(s)}</span>`).join("")}
+        </div>
+        <div class="ai-badge-group">
+          <h4>🎯 Focus Areas</h4>
+          ${data.weaknesses.map((w) => `<span class="ai-badge ai-badge-weakness">${escapeHtml(w)}</span>`).join("")}
+        </div>
+      </div>
+
+      <div class="ai-text-block">
+        <h4>Pattern Analysis</h4>
+        <p>${escapeHtml(data.patternAnalysis)}</p>
+      </div>
+
+      <div class="ai-text-block">
+        <h4>Where You'd Fit</h4>
+        <p>${escapeHtml(data.companyInsights)}</p>
+      </div>
+
+      <div class="ai-recommended">
+        <h4>Recommended Next Problems</h4>
+        <div class="ai-rec-grid">
+          ${data.recommendedProblems
+            .map(
+              (p) => `
+            <div class="ai-rec-card">
+              <span class="ai-rec-company">${escapeHtml(p.company)}</span>
+              <h5>${escapeHtml(p.title)}</h5>
+              <p>${escapeHtml(p.reason)}</p>
+            </div>
+          `,
+            )
+            .join("")}
+        </div>
+      </div>
+
+      <div class="ai-text-block">
+        <h4>Your Learning Path</h4>
+        <ol class="ai-learning-path">
+          ${data.learningPath.map((step) => `<li>${escapeHtml(step)}</li>`).join("")}
+        </ol>
+      </div>
+
+      <div class="ai-modal-actions">
+        <button class="btn btn-ghost" id="ai-download-btn">📥 Download Report</button>
+      </div>
+      <div class="ai-plan-choices">
+        <span class="ai-plan-choices-label">Get a practice plan:</span>
+        <button class="ai-plan-choice-btn" data-days="3">3-Day Sprint</button>
+        <button class="ai-plan-choice-btn" data-days="7">7-Day Plan</button>
+        <button class="ai-plan-choice-btn" data-days="14">14-Day Deep Dive</button>
+      </div>
+    </div>
+  `;
+
+  $("ai-modal").classList.add("show");
+  document.body.classList.add("modal-open");
+
+  $("ai-download-btn").addEventListener("click", downloadAiReport);
+  document.querySelectorAll(".ai-plan-choice-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const days = parseInt(btn.dataset.days, 10);
+      closeAiModal();
+      generateWeeklyPlan(days);
+    });
+  });
+}
+
+function renderWeeklyPlanModal(data) {
+  const body = $("ai-modal-body");
+  body.innerHTML = `
+    <div class="ai-report">
+      <div class="ai-text-block">
+        <h4>This Week's Focus</h4>
+        <p>${escapeHtml(data.focusArea)}</p>
+      </div>
+
+      <div class="ai-plan-days">
+        ${data.days
+          .map(
+            (d) => `
+          <div class="ai-plan-day">
+            <div class="ai-plan-day-header">
+              <span class="ai-plan-day-num">Day ${d.day}</span>
+              <span class="ai-plan-day-topic">${escapeHtml(d.topic)}</span>
+            </div>
+            <ul>${d.problems.map((p) => `<li>${escapeHtml(p)}</li>`).join("")}</ul>
+            <p class="ai-plan-goal">${escapeHtml(d.goal)}</p>
+          </div>
+        `,
+          )
+          .join("")}
+      </div>
+
+      <div class="ai-text-block">
+        <h4>Why This Plan</h4>
+        <p>${escapeHtml(data.summary)}</p>
+      </div>
+    </div>
+  `;
+  $("ai-modal").classList.add("show");
+  document.body.classList.add("modal-open");
+}
+
+function downloadAiReport() {
+  window.print();
+}
+
+function setupAiMentor() {
+  $("btn-analyze-progress")?.addEventListener("click", analyzeProgress);
+  $("ai-modal-close")?.addEventListener("click", closeAiModal);
+  $("ai-modal")?.addEventListener("click", (e) => {
+    if (e.target === $("ai-modal")) closeAiModal();
+  });
+}
+// ==================== AI CHAT WIDGET ====================
+// Append this to the end of script.js, after your existing AI mentor code.
+
+let aiChatHistory = []; // session-only, resets on page reload
+let aiChatOpen = false;
+
+function toggleAiChat() {
+  aiChatOpen = !aiChatOpen;
+  $("ai-chat-panel").hidden = !aiChatOpen;
+  if (aiChatOpen && aiChatHistory.length === 0) {
+    appendChatMessage(
+      "model",
+      "Hey! I'm your DSA mentor. Ask me anything — stuck on a pattern, want interview tips, or curious how you're tracking. What's up?",
+    );
+  }
+}
+
+function appendChatMessage(role, text) {
+  const list = $("ai-chat-messages");
+  const bubble = document.createElement("div");
+  bubble.className = `ai-chat-bubble ai-chat-${role}`;
+  bubble.textContent = text;
+  list.appendChild(bubble);
+  list.scrollTop = list.scrollHeight;
+}
+
+function showChatTyping() {
+  const list = $("ai-chat-messages");
+  const typing = document.createElement("div");
+  typing.className = "ai-chat-bubble ai-chat-model ai-chat-typing";
+  typing.id = "ai-chat-typing-indicator";
+  typing.innerHTML = "<span></span><span></span><span></span>";
+  list.appendChild(typing);
+  list.scrollTop = list.scrollHeight;
+}
+
+function hideChatTyping() {
+  $("ai-chat-typing-indicator")?.remove();
+}
+
+async function sendChatMessage() {
+  const input = $("ai-chat-input");
+  const message = input.value.trim();
+  if (!message) return;
+
+  if (!currentUser) {
+    openAuth("Sign in to chat with your AI mentor.");
+    return;
+  }
+
+  input.value = "";
+  input.disabled = true;
+  appendChatMessage("user", message);
+  aiChatHistory.push({ role: "user", text: message });
+  showChatTyping();
+
+  try {
+    const res = await api(`${API_URL}/api/ai/chat`, {
+      method: "POST",
+      body: { message, history: aiChatHistory },
+    });
+    const data = await res.json();
+    hideChatTyping();
+    if (!res.ok) throw new Error(data.message || "Chat failed");
+
+    appendChatMessage("model", data.reply);
+    aiChatHistory.push({ role: "model", text: data.reply });
+  } catch (error) {
+    hideChatTyping();
+    appendChatMessage("model", `⚠️ ${error.message}`);
+  } finally {
+    input.disabled = false;
+    input.focus();
+  }
+}
+
+function setupAiChat() {
+  $("ai-chat-fab")?.addEventListener("click", toggleAiChat);
+  $("ai-chat-close")?.addEventListener("click", toggleAiChat);
+  $("ai-chat-send")?.addEventListener("click", sendChatMessage);
+  $("ai-chat-input")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendChatMessage();
+    }
+  });
+}
+
+// ==================== WEEKLY PLAN — flexible duration ====================
+// Replace your existing generateWeeklyPlan function with this version
+// (it now accepts a days argument instead of always being 7).
+
+async function generateWeeklyPlan(days = 7) {
+  if (!currentUser) {
+    openAuth("Sign in to get your AI-generated practice plan.");
+    return;
+  }
+
+  showAiLoadingModal(`Building your ${days}-day practice plan...`);
+  try {
+    const res = await api(`${API_URL}/api/ai/weekly-plan`, {
+      method: "POST",
+      body: { days },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Plan generation failed");
+
+    localStorage.setItem(
+      AI_PLAN_CACHE_KEY,
+      JSON.stringify({ data, timestamp: Date.now() }),
+    );
+    renderWeeklyPlanModal(data);
+  } catch (error) {
+    closeAiModal();
+    showToast(error.message, "error");
+  }
 }

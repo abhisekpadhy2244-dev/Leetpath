@@ -28,29 +28,43 @@
       "googleId": "102978776244231321788",
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocK-fc_DKQR391iIReYqmS-NDFycPpUiewNTG92h_d2keoj5ZKcY=s96-c",
       "leetcodeData": {
-        "username": "Z68phyhrc3",
-        "totalSolved": 107,
-        "easySolved": 81,
-        "mediumSolved": 24,
-        "hardSolved": 2,
-        "ranking": 1532456,
-        "realName": "Abhisek Padhy",
-        "avatar": "https://assets.leetcode.com/users/Z68phyhrc3/avatar_1730433365.png",
-        "lastUpdated": "2026-08-09T16:59:16.110Z"
+        "username": "ClIyVgPJ9H",
+        "totalSolved": 31,
+        "easySolved": 23,
+        "mediumSolved": 8,
+        "hardSolved": 0,
+        "ranking": 3569327,
+        "realName": "Aryan",
+        "avatar": "https://assets.leetcode.com/users/ClIyVgPJ9H/avatar_1761842749.png",
+        "lastUpdated": "2026-09-01T20:23:48.256Z"
       },
       "progress": {
+        "1": "completed",
         "10": "completed",
         "15": "completed",
         "16": "completed",
+        "33": "attempted",
         "45": "completed",
         "47": "not-attempted",
         "48": "completed",
+        "53": "completed",
+        "101": "attempted",
+        "189": "completed",
         "248": "completed",
+        "356": "completed",
         "363": "not-attempted"
       },
       "createdAt": "2026-08-07T18:31:07.155Z",
-      "updatedAt": "2026-08-09T16:59:16.112Z",
-      "leetcodeUsername": "Z68phyhrc3"
+      "updatedAt": "2026-09-01T20:23:48.257Z",
+      "leetcodeUsername": "ClIyVgPJ9H",
+      "activityLog": {
+        "2026-08-06": 1,
+        "2026-07-29": 1,
+        "2026-07-28": 1,
+        "2026-07-26": 1,
+        "2026-07-21": 1,
+        "2026-06-23": 2
+      }
     },
     {
       "id": "1786131635531",

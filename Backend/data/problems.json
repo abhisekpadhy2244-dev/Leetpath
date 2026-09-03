@@ -2926,12 +2926,12 @@
   },
   {
     "id": 326,
-    "name": "Implement Trie (Prefix Tree)",
+    "name": "Implement Tree (Prefix Tree)",
     "url": "https://leetcode.com/problems/implement-trie-prefix-tree/",
     "difficulty": "Medium",
     "status": "not-attempted",
     "companies": ["Amazon", "Microsoft", "Flipkart", "Google"],
-    "topics": ["trie"]
+    "topics": ["tree"]
   },
   {
     "id": 327,
@@ -2940,7 +2940,7 @@
     "difficulty": "Medium",
     "status": "not-attempted",
     "companies": ["Amazon", "Microsoft", "Flipkart", "Google"],
-    "topics": ["trie"]
+    "topics": ["tree"]
   },
   {
     "id": 328,
@@ -2949,7 +2949,7 @@
     "difficulty": "Hard",
     "status": "not-attempted",
     "companies": ["Amazon", "Microsoft", "Flipkart", "Google"],
-    "topics": ["trie"]
+    "topics": ["tree"]
   },
   {
     "id": 329,
@@ -2958,7 +2958,7 @@
     "difficulty": "Medium",
     "status": "not-attempted",
     "companies": ["Amazon", "Microsoft"],
-    "topics": ["trie"]
+    "topics": ["tree"]
   },
   {
     "id": 330,
@@ -2967,7 +2967,7 @@
     "difficulty": "Medium",
     "status": "not-attempted",
     "companies": ["Amazon", "Microsoft", "Flipkart"],
-    "topics": ["trie"]
+    "topics": ["tree"]
   },
   {
     "id": 331,
@@ -2976,7 +2976,7 @@
     "difficulty": "Medium",
     "status": "not-attempted",
     "companies": ["Amazon", "Microsoft", "Flipkart"],
-    "topics": ["trie"]
+    "topics": ["tree"]
   },
   {
     "id": 332,
@@ -2985,7 +2985,7 @@
     "difficulty": "Medium",
     "status": "not-attempted",
     "companies": ["Amazon", "Microsoft"],
-    "topics": ["trie"]
+    "topics": ["tree"]
   },
   {
     "id": 333,
@@ -2994,7 +2994,7 @@
     "difficulty": "Medium",
     "status": "not-attempted",
     "companies": ["Amazon", "Microsoft", "Flipkart"],
-    "topics": ["trie"]
+    "topics": ["tree"]
   },
   {
     "id": 334,
@@ -3003,7 +3003,7 @@
     "difficulty": "Medium",
     "status": "not-attempted",
     "companies": ["Amazon", "Microsoft", "Flipkart"],
-    "topics": ["trie"]
+    "topics": ["tree"]
   },
   {
     "id": 335,
@@ -3012,7 +3012,7 @@
     "difficulty": "Hard",
     "status": "not-attempted",
     "companies": ["Amazon", "Microsoft"],
-    "topics": ["trie"]
+    "topics": ["tree"]
   },
   {
     "id": 336,
@@ -3021,7 +3021,7 @@
     "difficulty": "Hard",
     "status": "not-attempted",
     "companies": ["Amazon", "Microsoft", "Google"],
-    "topics": ["trie"]
+    "topics": ["tree"]
   },
   {
     "id": 337,
@@ -3030,7 +3030,7 @@
     "difficulty": "Hard",
     "status": "not-attempted",
     "companies": ["Amazon", "Microsoft", "Google"],
-    "topics": ["trie"]
+    "topics": ["tree"]
   },
   {
     "id": 338,
@@ -3039,7 +3039,7 @@
     "difficulty": "Hard",
     "status": "not-attempted",
     "companies": ["Amazon", "Microsoft", "Google"],
-    "topics": ["trie"]
+    "topics": ["tree"]
   },
   {
     "id": 339,
@@ -3048,7 +3048,7 @@
     "difficulty": "Hard",
     "status": "not-attempted",
     "companies": ["Amazon", "Microsoft", "Google"],
-    "topics": ["trie"]
+    "topics": ["tree"]
   },
   {
     "id": 340,
@@ -3057,7 +3057,7 @@
     "difficulty": "Hard",
     "status": "not-attempted",
     "companies": ["Amazon", "Microsoft", "Google"],
-    "topics": ["trie"]
+    "topics": ["tree"]
   },
   {
     "id": 341,

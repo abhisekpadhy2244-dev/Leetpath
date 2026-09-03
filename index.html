@@ -389,6 +389,14 @@
                         </div>
                     </div>
 
+                    <!-- AI DSA Mentor -->
+                    <div class="ai-mentor-cta">
+                        <button class="btn-ai-analyze" id="btn-analyze-progress">
+                            ✨ Analyze My Progress
+                        </button>
+                        <span class="ai-mentor-subtitle">Get a personalized readiness report powered by AI</span>
+                    </div>
+
                     <!-- Streak reminder banner (shown only when today's activity is missing) -->
                     <div class="streak-banner" id="streak-banner" hidden role="alert">
                         <span class="streak-banner-icon" aria-hidden="true">🔥</span>
@@ -469,6 +477,35 @@
         </div>
     </dialog>
 
+    <!-- AI Mentor Modal -->
+    <div class="modal-overlay ai-modal" id="ai-modal" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title">
+        <div class="modal-container ai-modal-container">
+            <button class="modal-close" id="ai-modal-close" aria-label="Close">✕</button>
+            <h2 id="ai-modal-title" class="ai-modal-title">AI DSA Mentor</h2>
+            <div id="ai-modal-body"></div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
+    <!-- ============================================================
+     AI CHAT WIDGET — add this right before </body>, alongside
+     your other modals (ai-modal, shortcuts-dialog, etc.)
+     ============================================================ -->
+
+<!-- Floating chat button, always visible -->
+<button class="ai-chat-fab" id="ai-chat-fab" aria-label="Chat with AI Mentor">💬</button>
+
+<!-- Chat panel, hidden until toggled -->
+<div class="ai-chat-panel" id="ai-chat-panel" hidden>
+    <div class="ai-chat-header">
+        <span>✨ AI Mentor</span>
+        <button class="ai-chat-close" id="ai-chat-close" aria-label="Close chat">✕</button>
+    </div>
+    <div class="ai-chat-messages" id="ai-chat-messages"></div>
+    <div class="ai-chat-input-row">
+        <input type="text" id="ai-chat-input" placeholder="Ask me anything about DSA..." maxlength="500" aria-label="Chat message">
+        <button id="ai-chat-send" aria-label="Send message">➤</button>
+    </div>
+</div>
 </body>
 </html>
