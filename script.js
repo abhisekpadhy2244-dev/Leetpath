@@ -706,15 +706,18 @@ function updateUI() {
   const signinBtn = $("btn-signin-header");
   const connectBtn = $("btn-connect-lc-header");
   const userMenu = $("user-menu");
+  const chatFab = $("ai-chat-fab");
   if (!currentUser) {
     if (signinBtn) signinBtn.hidden = false;
     if (connectBtn) connectBtn.hidden = false;
     if (userMenu) userMenu.hidden = true;
+    if (chatFab) chatFab.hidden = true;
     return;
   }
   if (signinBtn) signinBtn.hidden = true;
   if (connectBtn) connectBtn.hidden = true;
   if (userMenu) userMenu.hidden = false;
+  if (chatFab) chatFab.hidden = false;
   try {
     const avatarEl = $("user-avatar");
     const dropdownAvatar = $("dropdown-avatar");

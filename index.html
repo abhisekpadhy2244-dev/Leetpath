@@ -493,7 +493,13 @@
      ============================================================ -->
 
 <!-- Floating chat button, always visible -->
-<button class="ai-chat-fab" id="ai-chat-fab" aria-label="Chat with AI Mentor">💬</button>
+<button class="ai-chat-fab" id="ai-chat-fab" aria-label="Chat with AI Mentor" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M12 2.5c-5 0-9 3.6-9 8.1 0 2.6 1.4 4.9 3.6 6.4-.1 1.1-.5 2.4-1.4 3.6a.4.4 0 0 0 .4.6c1.9-.4 3.4-1.2 4.4-1.9.6.1 1.3.2 2 .2 5 0 9-3.6 9-8.1s-4-8.1-9-8.1z"/>
+        <path d="M12 9v3.5M12 15.5h.01" stroke-linecap="round"/>
+    </svg>
+    <span class="ai-chat-fab-badge"></span>
+</button>
 
 <!-- Chat panel, hidden until toggled -->
 <div class="ai-chat-panel" id="ai-chat-panel" hidden>
