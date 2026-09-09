@@ -1502,6 +1502,16 @@ function appendChatMessage(role, text) {
   bubble.textContent = text;
   list.appendChild(bubble);
   list.scrollTop = list.scrollHeight;
+  return bubble;
+}
+
+function createStreamingBubble() {
+  const list = $("ai-chat-messages");
+  const bubble = document.createElement("div");
+  bubble.className = "ai-chat-bubble ai-chat-model";
+  list.appendChild(bubble);
+  list.scrollTop = list.scrollHeight;
+  return bubble;
 }
 
 function showChatTyping() {
@@ -1539,12 +1549,30 @@ async function sendChatMessage() {
       method: "POST",
       body: { message, history: aiChatHistory },
     });
-    const data = await res.json();
-    hideChatTyping();
-    if (!res.ok) throw new Error(data.message || "Chat failed");
 
-    appendChatMessage("model", data.reply);
-    aiChatHistory.push({ role: "model", text: data.reply });
+    if (!res.ok) {
+      // Error responses (rate limit, bad input, etc.) still come back as
+      // JSON, not a stream — handle that before touching the reader.
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.message || "Chat failed");
+    }
+
+    hideChatTyping();
+    const bubble = createStreamingBubble();
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let fullReply = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunkText = decoder.decode(value, { stream: true });
+      fullReply += chunkText;
+      bubble.textContent = fullReply;
+      $("ai-chat-messages").scrollTop = $("ai-chat-messages").scrollHeight;
+    }
+
+    aiChatHistory.push({ role: "model", text: fullReply });
   } catch (error) {
     hideChatTyping();
     appendChatMessage("model", `⚠️ ${error.message}`);

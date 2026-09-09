@@ -172,6 +172,7 @@ YOUR JOB: Analyze PATTERNS, not just summarize numbers. Rules:
       config: {
         responseMimeType: "application/json",
         responseSchema: analysisSchema,
+        maxOutputTokens: 1200,
       },
     });
 
@@ -179,11 +180,9 @@ YOUR JOB: Analyze PATTERNS, not just summarize numbers. Rules:
   } catch (error) {
     console.error("AI analyze error:", error);
     if (error.status === 429 || error.message?.includes("RESOURCE_EXHAUSTED")) {
-      return res
-        .status(429)
-        .json({
-          message: "Gemini's rate limit was hit — wait a minute and try again.",
-        });
+      return res.status(429).json({
+        message: "Gemini's rate limit was hit — wait a minute and try again.",
+      });
     }
     res.status(500).json({ message: "Analysis failed: " + error.message });
   }
@@ -227,6 +226,7 @@ YOUR JOB: Identify their weakest 1-2 topics (low or zero counts on important top
       config: {
         responseMimeType: "application/json",
         responseSchema: weeklyPlanSchema,
+        maxOutputTokens: 1500,
       },
     });
 
@@ -234,11 +234,9 @@ YOUR JOB: Identify their weakest 1-2 topics (low or zero counts on important top
   } catch (error) {
     console.error("AI weekly-plan error:", error);
     if (error.status === 429 || error.message?.includes("RESOURCE_EXHAUSTED")) {
-      return res
-        .status(429)
-        .json({
-          message: "Gemini's rate limit was hit — wait a minute and try again.",
-        });
+      return res.status(429).json({
+        message: "Gemini's rate limit was hit — wait a minute and try again.",
+      });
     }
     res
       .status(500)
@@ -288,21 +286,39 @@ Answer questions about data structures, algorithms, interview prep, or their own
     }
     contents.push({ role: "user", parts: [{ text: message }] });
 
-    const response = await ai.models.generateContent({
+    // Streaming: send text back as it's generated instead of waiting for
+    // the full reply. This is what actually fixes "feels slow" — the
+    // total generation time doesn't change, but the user sees words
+    // appear immediately instead of staring at a blank bubble.
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("X-Accel-Buffering", "no"); // disable proxy buffering (Render/nginx)
+
+    const stream = await ai.models.generateContentStream({
       model: MODEL,
       contents,
-      config: { systemInstruction },
+      config: {
+        systemInstruction,
+        maxOutputTokens: 300, // keeps replies concise and bounds worst-case latency
+      },
     });
 
-    res.json({ reply: response.text });
+    for await (const chunk of stream) {
+      if (chunk.text) res.write(chunk.text);
+    }
+    res.end();
   } catch (error) {
     console.error("AI chat error:", error);
+    if (res.headersSent) {
+      // Streaming had already started — end the response gracefully
+      // instead of trying to send a JSON error on top of it.
+      res.end("\n\n[Something went wrong generating the rest of this reply.]");
+      return;
+    }
     if (error.status === 429 || error.message?.includes("RESOURCE_EXHAUSTED")) {
-      return res
-        .status(429)
-        .json({
-          message: "Gemini's rate limit was hit — wait a moment and try again.",
-        });
+      return res.status(429).json({
+        message: "Gemini's rate limit was hit — wait a moment and try again.",
+      });
     }
     res.status(500).json({ message: "Chat failed: " + error.message });
   }
