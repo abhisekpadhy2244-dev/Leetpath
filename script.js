@@ -1549,7 +1549,6 @@ async function sendChatMessage() {
       method: "POST",
       body: { message, history: aiChatHistory },
     });
-
     if (!res.ok) {
       // Error responses (rate limit, bad input, etc.) still come back as
       // JSON, not a stream — handle that before touching the reader.
