@@ -5,7 +5,7 @@ const auth = require("../middleware/auth");
 const Storage = require("../utils/storage");
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-const MODEL = "inclusionai/ling-3.0-flash-sante:free";
+const MODEL = process.env.OPENROUTER_MODEL || "poolside/laguna-s-2.1:free";
 
 // 3/hour in production, generous locally so you're not restarting the
 // server every few clicks while developing.
