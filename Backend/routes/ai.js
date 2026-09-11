@@ -5,7 +5,7 @@ const auth = require("../middleware/auth");
 const Storage = require("../utils/storage");
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-const MODEL = process.env.OPENROUTER_MODEL || "poolside/laguna-s-2.1:free";
+const MODEL = process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-super-120b-a12b:free";
 
 // 3/hour in production, generous locally so you're not restarting the
 // server every few clicks while developing.
