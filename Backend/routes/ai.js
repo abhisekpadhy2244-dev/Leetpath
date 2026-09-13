@@ -35,6 +35,31 @@ const chatLimiter = rateLimit({
 
 // ---- Helpers ----
 
+function repairJson(str) {
+  // If the string is already valid JSON, return it as-is.
+  try { JSON.parse(str); return str; } catch {}
+  // Count unclosed braces and brackets, then try closing them.
+  let openBraces = 0, openBrackets = 0;
+  let inString = false, escape = false;
+  for (const ch of str) {
+    if (escape) { escape = false; continue; }
+    if (ch === '\\') { escape = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === '{') openBraces++;
+    else if (ch === '}') openBraces--;
+    else if (ch === '[') openBrackets++;
+    else if (ch === ']') openBrackets--;
+  }
+  // Trim any trailing comma before closing
+  let fixed = str.replace(/,\s*([\]}])/g, '$1');
+  // Close any unclosed structures (innermost first)
+  for (let i = 0; i < openBrackets; i++) fixed += ']';
+  for (let i = 0; i < openBraces; i++) fixed += '}';
+  try { JSON.parse(fixed); return fixed; } catch {}
+  return null; // still broken
+}
+
 function getSolvedProblemsForUser(userId) {
   const user = Storage.findUserById(userId);
   if (!user) return [];
@@ -156,7 +181,11 @@ You MUST respond in valid JSON format only, matching this exact structure:
     });
 
     const data = await response.json();
-    const content = data.choices[0].message.content;
+    const content = data.choices[0]?.message?.content;
+
+    if (!content) {
+      throw new Error("AI returned an empty response — try again.");
+    }
 
     // Extract JSON from the response (in case the model wraps it in markdown)
     const jsonMatch = content.match(/\{[\s\S]*\}/);
@@ -213,18 +242,34 @@ You MUST respond in valid JSON format only, matching this exact structure:
   "summary": "string"
 }`;
 
+    const maxTokens = 1000 + days * 300;
+
     const response = await callOpenRouter([{ role: "user", content: prompt }], {
       temperature: 0.3,
-      max_tokens: 1500,
+      max_tokens: maxTokens,
     });
 
     const data = await response.json();
-    const content = data.choices[0].message.content;
+    const content = data.choices[0]?.message?.content;
+
+    if (!content) {
+      throw new Error("AI returned an empty response — try again with a shorter plan or fewer problems.");
+    }
 
     const jsonMatch = content.match(/\{[\s\S]*\}/);
-    const jsonString = jsonMatch ? jsonMatch[0] : content;
+    let jsonString = jsonMatch ? jsonMatch[0] : content;
 
-    res.json(JSON.parse(jsonString));
+    // If the JSON is truncated, try to repair it
+    let parsed;
+    try { parsed = JSON.parse(jsonString); } catch {
+      const repaired = repairJson(jsonString);
+      if (!repaired) {
+        throw new Error("AI returned malformed JSON — try again.");
+      }
+      parsed = JSON.parse(repaired);
+    }
+
+    res.json(parsed);
   } catch (error) {
     console.error("AI weekly-plan error:", error);
     if (
@@ -291,30 +336,34 @@ Answer questions about data structures, algorithms, interview prep, or their own
 
     const response = await callOpenRouter(messages, {
       stream: true,
-      max_tokens: 300,
+      max_tokens: 600,
     });
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
+    let lineBuffer = "";
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
 
       const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split("\n").filter((line) => line.trim() !== "");
+      lineBuffer += chunk;
+      const lines = lineBuffer.split("\n");
+      // Keep the last (potentially incomplete) line in the buffer
+      lineBuffer = lines.pop() || "";
 
       for (const line of lines) {
-        if (line.startsWith("data: ")) {
-          const data = line.slice(6);
-          if (data === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(data);
-            const text = parsed.choices[0]?.delta?.content || "";
-            if (text) res.write(text);
-          } catch (e) {
-            // Ignore parse errors on partial chunks
-          }
+        const trimmed = line.trim();
+        if (!trimmed || !trimmed.startsWith("data: ")) continue;
+        const data = trimmed.slice(6);
+        if (data === "[DONE]") continue;
+        try {
+          const parsed = JSON.parse(data);
+          const text = parsed.choices[0]?.delta?.content || "";
+          if (text) res.write(text);
+        } catch (e) {
+          // Partial JSON — skip this line, it will be retried or is unrecoverable
         }
       }
     }

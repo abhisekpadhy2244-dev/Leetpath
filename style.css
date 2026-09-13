@@ -1294,3 +1294,38 @@ svg { display: block; }
     .ai-chat-panel { right: 16px; bottom: 84px; width: calc(100vw - 32px); }
     .ai-chat-fab { right: 16px; bottom: 16px; }
 }
+
+/* ---- Header actions (clear + close) ---- */
+.ai-chat-header-actions { display: flex; align-items: center; gap: 6px; }
+.ai-chat-clear {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 50%;
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.7);
+    font-size: 12px; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.ai-chat-clear:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+/* ---- Timestamps on messages ---- */
+.ai-chat-timestamp {
+    display: block;
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 4px;
+    text-align: right;
+}
+.ai-chat-user .ai-chat-timestamp { text-align: right; }
+.ai-chat-model .ai-chat-timestamp { text-align: left; }
+
+/* ---- Bold / inline code inside chat bubbles ---- */
+.ai-chat-model strong { color: #fff; font-weight: 600; }
+.ai-chat-model code {
+    font-family: var(--font-mono, monospace);
+    font-size: 12px;
+    background: rgba(255,255,255,0.1);
+    padding: 1px 5px;
+    border-radius: 4px;
+}

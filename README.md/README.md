@@ -34,27 +34,41 @@ A DSA tracker for the combined **Striver + Love Babbar sheet (400 problems)** �
 
 ```
 Leetpath-DSA/
-├── index.html          # Main app (problem list, calendar, search)
-├── landing.html        # Public landing page
-├── auth-success.html   # OAuth callback handler
-├── script.js           # Frontend logic
-├── style.css           # Styling
-├── render.yaml         # Render deployment config
 ├── Backend/
-│   ├── server.js       # Express entry point
-│   ├── config/passport.js
-│   ├── routes/
-│   │   ├── auth.js         # Email/password auth
-│   │   ├── google-auth.js  # Google OAuth
-│   │   ├── progress.js     # User progress CRUD
-│   │   └── leetcode.js     # LeetCode sync endpoint
+│   ├── config/
+│   ├── data/
+│   │   ├── problems.json       # 400 problems (Striver + Love Babbar)
+│   │   └── users.json          # User accounts + progress
 │   ├── middleware/
-│   │   ├── auth.js         # JWT verification
-│   │   └── Optionalauth.js # Optional auth for public routes
-│   ├── utils/storage.js    # JSON file read/write
-│   └── data/
-│       ├── problems.json   # 400 problems (Striver + Love Babbar)
-│       └── users.json      # User accounts + progress
+│   │   ├── auth.js             # JWT verification
+│   │   └── optionalauth.js     # Optional auth for public routes
+│   ├── routes/
+│   │   ├── ai.js               # AI endpoint
+│   │   ├── auth.js             # Email/password auth
+│   │   ├── google-auth.js      # Google OAuth
+│   │   ├── leetcode.js         # LeetCode sync endpoint
+│   │   └── progress.js         # User progress CRUD
+│   ├── utils/
+│   │   └── storage.js          # JSON file read/write
+│   ├── env
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── passport.js
+│   ├── server.js               # Express entry point
+│   └── test-api.js
+├── frontend/
+│   └── node_modules/
+├── README.md
+├── .gitignore
+├── auth-success.html           # OAuth callback handler
+├── favicon.png
+├── index.html                  # Main app (problem list, calendar, search)
+├── landing.html                # Public landing page
+├── package.json
+├── package-lock.json
+├── render.yaml                 # Render deployment config
+├── script.js                   # Frontend logic
+└── style.css                   # Styling
 ```
 
 ---

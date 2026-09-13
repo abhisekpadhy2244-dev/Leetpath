@@ -1138,6 +1138,18 @@ function escapeHtml(text) {
     .replace(/'/g, "&#039;");
 }
 
+function renderMd(text) {
+  if (!text) return "";
+  let safe = escapeHtml(text);
+  // Bold: **text**
+  safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  // Inline code: `text`
+  safe = safe.replace(/`(.+?)`/g, "<code>$1</code>");
+  // Line breaks
+  safe = safe.replace(/\n/g, "<br>");
+  return safe;
+}
+
 // ==================== AVATAR HELPER ====================
 function setAvatar(el, url) {
   el.style.backgroundImage = `url('${url}')`;
@@ -1484,22 +1496,53 @@ function setupAiMentor() {
 let aiChatHistory = []; // session-only, resets on page reload
 let aiChatOpen = false;
 
+const AI_CHAT_HISTORY_KEY = "leetpath_ai_chat_history";
+
 function toggleAiChat() {
   aiChatOpen = !aiChatOpen;
   $("ai-chat-panel").hidden = !aiChatOpen;
-  if (aiChatOpen && aiChatHistory.length === 0) {
-    appendChatMessage(
-      "model",
-      "Hey! I'm your DSA mentor. Ask me anything — stuck on a pattern, want interview tips, or curious how you're tracking. What's up?",
-    );
+  if (aiChatOpen) {
+    // Load persisted history on first open
+    if (aiChatHistory.length === 0) {
+      const saved = localStorage.getItem(AI_CHAT_HISTORY_KEY);
+      if (saved) {
+        try {
+          aiChatHistory = JSON.parse(saved);
+          const list = $("ai-chat-messages");
+          list.innerHTML = "";
+          for (const turn of aiChatHistory) {
+            appendChatMessage(turn.role === "model" ? "model" : "user", turn.text, turn.ts);
+          }
+        } catch {
+          aiChatHistory = [];
+        }
+      }
+    }
+    if (aiChatHistory.length === 0) {
+      appendChatMessage(
+        "model",
+        "Hey! I'm your DSA mentor. Ask me anything \u2014 stuck on a pattern, want interview tips, or curious how you're tracking. What's up?",
+      );
+    }
+    $("ai-chat-input").focus();
   }
 }
 
-function appendChatMessage(role, text) {
+function appendChatMessage(role, text, timestamp) {
   const list = $("ai-chat-messages");
   const bubble = document.createElement("div");
   bubble.className = `ai-chat-bubble ai-chat-${role}`;
-  bubble.textContent = text;
+  if (role === "model") {
+    bubble.innerHTML = renderMd(text);
+  } else {
+    bubble.textContent = text;
+  }
+  if (timestamp) {
+    const ts = document.createElement("span");
+    ts.className = "ai-chat-timestamp";
+    ts.textContent = new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    bubble.appendChild(ts);
+  }
   list.appendChild(bubble);
   list.scrollTop = list.scrollHeight;
   return bubble;
@@ -1540,8 +1583,9 @@ async function sendChatMessage() {
 
   input.value = "";
   input.disabled = true;
-  appendChatMessage("user", message);
-  aiChatHistory.push({ role: "user", text: message });
+  const userTs = Date.now();
+  appendChatMessage("user", message, userTs);
+  aiChatHistory.push({ role: "user", text: message, ts: userTs });
   showChatTyping();
 
   try {
@@ -1567,24 +1611,43 @@ async function sendChatMessage() {
       if (done) break;
       const chunkText = decoder.decode(value, { stream: true });
       fullReply += chunkText;
-      bubble.textContent = fullReply;
+      bubble.innerHTML = renderMd(fullReply);
       $("ai-chat-messages").scrollTop = $("ai-chat-messages").scrollHeight;
     }
 
-    aiChatHistory.push({ role: "model", text: fullReply });
+    const modelTs = Date.now();
+    aiChatHistory.push({ role: "model", text: fullReply, ts: modelTs });
+    // Persist to localStorage
+    localStorage.setItem(AI_CHAT_HISTORY_KEY, JSON.stringify(aiChatHistory));
+    // Add timestamp to the bubble
+    const ts = document.createElement("span");
+    ts.className = "ai-chat-timestamp";
+    ts.textContent = new Date(modelTs).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    bubble.appendChild(ts);
   } catch (error) {
     hideChatTyping();
-    appendChatMessage("model", `⚠️ ${error.message}`);
+    appendChatMessage("model", `\u26a0\ufe0f ${error.message}`);
   } finally {
     input.disabled = false;
     input.focus();
   }
 }
 
+function clearChatHistory() {
+  aiChatHistory = [];
+  localStorage.removeItem(AI_CHAT_HISTORY_KEY);
+  $("ai-chat-messages").innerHTML = "";
+  appendChatMessage(
+    "model",
+    "Chat cleared. Ask me anything about DSA!",
+  );
+}
+
 function setupAiChat() {
   $("ai-chat-fab")?.addEventListener("click", toggleAiChat);
   $("ai-chat-close")?.addEventListener("click", toggleAiChat);
   $("ai-chat-send")?.addEventListener("click", sendChatMessage);
+  $("ai-chat-clear")?.addEventListener("click", clearChatHistory);
   $("ai-chat-input")?.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
