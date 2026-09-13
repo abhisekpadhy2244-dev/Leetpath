@@ -503,17 +503,26 @@
 <!-- Chat panel, hidden until toggled -->
 <div class="ai-chat-panel" id="ai-chat-panel" hidden>
     <div class="ai-chat-header">
-        <span>✨ AI Mentor</span>
+        <span class="ai-chat-title">✨ AI Mentor</span>
         <div class="ai-chat-header-actions">
-            <button class="ai-chat-clear" id="ai-chat-clear" aria-label="Clear chat history" title="Clear history">🗑</button>
-            <button class="ai-chat-close" id="ai-chat-close" aria-label="Close chat">✕</button>
+            <button class="ai-chat-icon-btn" id="ai-chat-clear" aria-label="Clear chat history" title="Clear history">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </button>
+            <button class="ai-chat-icon-btn" id="ai-chat-close" aria-label="Close chat" title="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+            </button>
         </div>
     </div>
     <div class="ai-chat-messages" id="ai-chat-messages"></div>
-    <div class="ai-chat-input-row">
-        <input type="text" id="ai-chat-input" placeholder="Ask me anything about DSA..." maxlength="500" aria-label="Chat message">
-        <button id="ai-chat-send" aria-label="Send message">➤</button>
+    <div class="ai-chat-input-area">
+        <div class="ai-chat-input-row">
+            <input type="text" id="ai-chat-input" placeholder="Ask me anything about DSA..." maxlength="500" aria-label="Chat message">
+            <button id="ai-chat-send" aria-label="Send message">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+            </button>
+        </div>
     </div>
+    <div class="ai-chat-resize-handle" id="ai-chat-resize" aria-label="Resize chat panel"></div>
 </div>
 </body>
 </html>

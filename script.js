@@ -1654,6 +1654,52 @@ function setupAiChat() {
       sendChatMessage();
     }
   });
+
+  // Resize handle — drag to resize the chat panel
+  const panel = $("ai-chat-panel");
+  const handle = $("ai-chat-resize");
+  if (panel && handle) {
+    let isResizing = false;
+    let startX, startY, startW, startH;
+
+    handle.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      isResizing = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startW = panel.offsetWidth;
+      startH = panel.offsetHeight;
+      document.body.style.cursor = "nwse-resize";
+      document.body.style.userSelect = "none";
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (!isResizing) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      const newW = Math.min(600, Math.max(320, startW + dx));
+      const newH = Math.min(window.innerHeight * 0.85, Math.max(380, startH + dy));
+      panel.style.width = newW + "px";
+      panel.style.height = newH + "px";
+    });
+
+    document.addEventListener("mouseup", () => {
+      if (isResizing) {
+        isResizing = false;
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      }
+    });
+  }
+
+  // Send button glow — light up when text is typed
+  const chatInput = $("ai-chat-input");
+  const sendBtn = $("ai-chat-send");
+  if (chatInput && sendBtn) {
+    chatInput.addEventListener("input", () => {
+      sendBtn.classList.toggle("has-text", chatInput.value.trim().length > 0);
+    });
+  }
 }
 
 // ==================== WEEKLY PLAN — flexible duration ====================

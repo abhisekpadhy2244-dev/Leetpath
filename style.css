@@ -1093,180 +1093,310 @@ svg { display: block; }
     .ai-score-section { flex-direction: column; text-align: center; }
 }
 /* ============================================================
-   AI CHAT WIDGET — premium glassmorphism redesign
-   Replace your ENTIRE previous "AI CHAT WIDGET" CSS block
-   (search for "AI CHAT WIDGET" in style.css) with this one.
+   AI CHAT WIDGET — Premium Cyber-Minimalist HUD Design
    ============================================================ */
 
+/* ---- Floating Action Button ---- */
 .ai-chat-fab {
     position: fixed;
     bottom: 24px; right: 24px;
     z-index: 90;
     display: flex; align-items: center; gap: 8px;
-    padding: 12px 18px;
+    padding: 12px 20px;
     border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(20, 18, 30, 0.85);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    background: rgba(12, 10, 22, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     color: #fff;
     cursor: pointer;
-    box-shadow: 0 8px 28px -6px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04) inset;
-    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    box-shadow:
+        0 0 20px -4px rgba(139, 92, 246, 0.35),
+        0 8px 32px -8px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
-/* Hard guarantee: [hidden] must win, no matter what other rules exist here.
-   This was the actual bug — the fab kept showing on the landing page
-   because this guard was missing (only the chat panel had it). */
 .ai-chat-fab[hidden] { display: none !important; }
-
 .ai-chat-fab svg {
-    width: 16px; height: 16px;
+    width: 15px; height: 15px;
     flex-shrink: 0;
     color: #c084fc;
-    filter: drop-shadow(0 0 6px rgba(192,132,252,0.6));
+    filter: drop-shadow(0 0 8px rgba(192, 132, 252, 0.5));
+    transition: filter 0.25s;
 }
 .ai-chat-fab-label {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
-    letter-spacing: -0.01em;
+    letter-spacing: 0.01em;
 }
 .ai-chat-fab:hover {
-    transform: translateY(-2px);
-    border-color: rgba(192,132,252,0.5);
-    box-shadow: 0 10px 34px -4px rgba(147,51,234,0.5), 0 0 0 1px rgba(255,255,255,0.06) inset;
+    transform: translateY(-2px) scale(1.02);
+    border-color: rgba(168, 85, 247, 0.5);
+    box-shadow:
+        0 0 28px -2px rgba(139, 92, 246, 0.5),
+        0 12px 40px -8px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.06) inset;
 }
+.ai-chat-fab:hover svg { filter: drop-shadow(0 0 12px rgba(192, 132, 252, 0.8)); }
 
-/* ---- Frosted glass panel ---- */
+/* ---- Main Panel — Floating HUD ---- */
 .ai-chat-panel {
     position: fixed;
     bottom: 92px; right: 24px;
     z-index: 90;
-    width: 340px;
+    width: 380px;
     max-width: calc(100vw - 32px);
-    height: 460px;
+    height: 520px;
     max-height: calc(100vh - 140px);
+    min-width: 320px;
+    min-height: 380px;
     display: flex;
     flex-direction: column;
-    background: rgba(20, 18, 30, 0.55);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 24px;
-    box-shadow: 0 24px 64px -12px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.03) inset;
+    background: rgba(10, 8, 18, 0.72);
+    backdrop-filter: blur(20px) saturate(1.3);
+    -webkit-backdrop-filter: blur(20px) saturate(1.3);
+    border: 1px solid rgba(139, 92, 246, 0.18);
+    border-radius: 20px;
+    box-shadow:
+        0 0 1px rgba(139, 92, 246, 0.3),
+        0 0 40px -8px rgba(139, 92, 246, 0.12),
+        0 24px 80px -12px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(255, 255, 255, 0.02) inset;
     overflow: hidden;
+    transition: box-shadow 0.3s;
 }
-/* Defensive fix: the browser's [hidden] default must win over any
-   display rule here, or the panel stays visible even when "hidden"
-   is set — this was the actual bug last time. */
+.ai-chat-panel:hover {
+    box-shadow:
+        0 0 1px rgba(139, 92, 246, 0.4),
+        0 0 60px -8px rgba(139, 92, 246, 0.18),
+        0 24px 80px -12px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+}
 .ai-chat-panel[hidden] { display: none !important; }
 
+/* ---- Header ---- */
 .ai-chat-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 18px;
-    background: linear-gradient(135deg, rgba(124,58,237,0.25), rgba(236,72,153,0.15));
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 14px 18px;
+    background: linear-gradient(135deg, rgba(88, 28, 135, 0.3) 0%, rgba(30, 10, 60, 0.4) 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.12);
+    flex-shrink: 0;
+}
+.ai-chat-title {
     font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
     font-weight: 700;
+    font-size: 14px;
     letter-spacing: -0.01em;
-    color: #fff;
-    font-size: 15px;
+    color: rgba(255, 255, 255, 0.92);
 }
-.ai-chat-close {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 50%;
-    width: 26px; height: 26px;
-    display: flex; align-items: center; justify-content: center;
-    color: rgba(255,255,255,0.7);
-    font-size: 12px; cursor: pointer;
-    transition: background 0.15s, color 0.15s;
+.ai-chat-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
-.ai-chat-close:hover { background: rgba(255,255,255,0.15); color: #fff; }
 
+/* ---- Floating Icon Buttons (header) ---- */
+.ai-chat-icon-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ai-chat-icon-btn svg {
+    width: 15px; height: 15px;
+}
+.ai-chat-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.85);
+    transform: scale(1.08);
+}
+.ai-chat-icon-btn:active { transform: scale(0.95); }
+
+/* ---- Messages Container ---- */
 .ai-chat-messages {
     flex: 1;
     overflow-y: auto;
     padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 92, 246, 0.2) transparent;
 }
+.ai-chat-messages::-webkit-scrollbar { width: 5px; }
+.ai-chat-messages::-webkit-scrollbar-track { background: transparent; }
+.ai-chat-messages::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.2); border-radius: 99px; }
+
+/* ---- Message Bubbles ---- */
 .ai-chat-bubble {
-    max-width: 82%;
+    max-width: 84%;
     padding: 10px 14px;
-    border-radius: 16px;
+    border-radius: 14px;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
     font-size: 13px;
-    line-height: 1.55;
-    white-space: pre-wrap;
+    line-height: 1.65;
+    letter-spacing: 0.005em;
     word-wrap: break-word;
+    animation: bubbleIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
+@keyframes bubbleIn {
+    from { opacity: 0; transform: translateY(6px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* User — solid electric indigo, sharp corners */
 .ai-chat-user {
     align-self: flex-end;
-    background: linear-gradient(135deg, #7c3aed, #ec4899);
+    background: linear-gradient(135deg, #6d28d9, #7c3aed);
     color: #fff;
-    border-bottom-right-radius: 5px;
-    box-shadow: 0 4px 16px -4px rgba(168,85,247,0.5);
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 2px 12px -2px rgba(109, 40, 217, 0.4);
+    white-space: pre-wrap;
 }
+
+/* AI — blends with container */
 .ai-chat-model {
     align-self: flex-start;
-    background: rgba(255,255,255,0.06);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.92);
-    border-bottom-left-radius: 5px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.88);
+    border-bottom-left-radius: 4px;
+    white-space: pre-wrap;
 }
-.ai-chat-typing { display: flex; gap: 4px; padding: 13px 15px; }
+
+/* Typing indicator */
+.ai-chat-typing { display: flex; gap: 5px; padding: 14px 16px; }
 .ai-chat-typing span {
     width: 6px; height: 6px; border-radius: 50%;
-    background: rgba(255,255,255,0.5);
-    animation: aiTypingBounce 1.2s infinite ease-in-out;
+    background: rgba(168, 85, 247, 0.6);
+    animation: aiTypingPulse 1.4s infinite ease-in-out;
 }
 .ai-chat-typing span:nth-child(2) { animation-delay: 0.2s; }
 .ai-chat-typing span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes aiTypingBounce {
-    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-    30% { transform: translateY(-4px); opacity: 1; }
+@keyframes aiTypingPulse {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+    30% { transform: translateY(-5px); opacity: 1; }
 }
 
-/* ---- Input row: functional text field, glass-pill styled,
-   glows neon purple on focus (the "active" moment) ---- */
+/* ---- Timestamps ---- */
+.ai-chat-timestamp {
+    display: block;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.25);
+    margin-top: 5px;
+    font-family: 'JetBrains Mono', 'Berkeley Mono', ui-monospace, monospace;
+    letter-spacing: 0.02em;
+}
+.ai-chat-user .ai-chat-timestamp { text-align: right; }
+.ai-chat-model .ai-chat-timestamp { text-align: left; }
+
+/* ---- Inline formatting inside AI bubbles ---- */
+.ai-chat-model strong {
+    color: #e0d4ff;
+    font-weight: 600;
+}
+.ai-chat-model code {
+    font-family: 'JetBrains Mono', 'Berkeley Mono', ui-monospace, monospace;
+    font-size: 12px;
+    background: rgba(139, 92, 246, 0.12);
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    padding: 2px 6px;
+    border-radius: 5px;
+    color: #c4b5fd;
+}
+
+/* ---- Input Area ---- */
+.ai-chat-input-area {
+    flex-shrink: 0;
+    padding: 12px 14px 14px;
+    border-top: 1px solid rgba(139, 92, 246, 0.1);
+    background: rgba(10, 8, 18, 0.4);
+}
 .ai-chat-input-row {
-    display: flex; gap: 8px;
-    padding: 12px;
-    border-top: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.02);
+    display: flex; gap: 8px; align-items: center;
 }
 .ai-chat-input-row input {
     flex: 1;
-    background: rgba(255,255,255,0.06);
-    backdrop-filter: blur(6px);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 999px;
-    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 11px 16px;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
     font-size: 13px;
-    color: #fff;
-    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-}
-.ai-chat-input-row input::placeholder { color: rgba(255,255,255,0.4); }
-.ai-chat-input-row input:focus {
+    color: rgba(255, 255, 255, 0.9);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     outline: none;
-    background: rgba(255,255,255,0.09);
-    border-color: rgba(168,85,247,0.6);
-    box-shadow: 0 0 0 3px rgba(168,85,247,0.25), 0 0 20px -4px rgba(168,85,247,0.5);
 }
-.ai-chat-input-row button {
-    width: 38px; height: 38px; flex-shrink: 0;
-    border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: linear-gradient(135deg, #7c3aed, #a855f7);
-    color: #fff;
-    cursor: pointer;
-    box-shadow: 0 4px 16px -4px rgba(168,85,247,0.6);
-    transition: transform 0.15s;
+.ai-chat-input-row input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
 }
-.ai-chat-input-row button:hover { transform: scale(1.06); }
+.ai-chat-input-row input:focus {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow:
+        0 0 0 3px rgba(139, 92, 246, 0.1),
+        0 0 24px -4px rgba(139, 92, 246, 0.2);
+}
 
-/* ---- Weekly plan duration choice buttons ---- */
+/* Send button — clean vector arrow */
+.ai-chat-input-row button {
+    width: 40px; height: 40px; flex-shrink: 0;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(109, 40, 217, 0.25);
+    color: rgba(255, 255, 255, 0.35);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ai-chat-input-row button svg {
+    width: 16px; height: 16px;
+    transition: all 0.25s;
+}
+/* When text is typed — light up */
+.ai-chat-input-row button.has-text {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border-color: rgba(168, 85, 247, 0.5);
+    color: #fff;
+    box-shadow: 0 0 20px -4px rgba(139, 92, 246, 0.5);
+}
+.ai-chat-input-row button.has-text svg {
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+}
+.ai-chat-input-row button:hover.has-text {
+    transform: scale(1.06);
+    box-shadow: 0 0 28px -2px rgba(139, 92, 246, 0.6);
+}
+.ai-chat-input-row button:active { transform: scale(0.95); }
+
+/* ---- Resize Handle ---- */
+.ai-chat-resize-handle {
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 22px; height: 22px;
+    cursor: nwse-resize;
+    z-index: 5;
+}
+.ai-chat-resize-handle::before {
+    content: "";
+    position: absolute;
+    bottom: 5px; right: 5px;
+    width: 10px; height: 10px;
+    border-right: 2px solid rgba(139, 92, 246, 0.25);
+    border-bottom: 2px solid rgba(139, 92, 246, 0.25);
+    border-radius: 0 0 3px 0;
+    transition: border-color 0.2s;
+}
+.ai-chat-panel:hover .ai-chat-resize-handle::before {
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+/* ---- Weekly Plan Buttons (inside analysis modal) ---- */
 .ai-plan-choices {
     display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
     padding-top: 12px; margin-top: 8px;
@@ -1290,42 +1420,8 @@ svg { display: block; }
     box-shadow: 0 0 16px -4px rgba(168,85,247,0.4);
 }
 
+/* ---- Responsive ---- */
 @media (max-width: 500px) {
     .ai-chat-panel { right: 16px; bottom: 84px; width: calc(100vw - 32px); }
     .ai-chat-fab { right: 16px; bottom: 16px; }
-}
-
-/* ---- Header actions (clear + close) ---- */
-.ai-chat-header-actions { display: flex; align-items: center; gap: 6px; }
-.ai-chat-clear {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 50%;
-    width: 26px; height: 26px;
-    display: flex; align-items: center; justify-content: center;
-    color: rgba(255,255,255,0.7);
-    font-size: 12px; cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-}
-.ai-chat-clear:hover { background: rgba(255,255,255,0.15); color: #fff; }
-
-/* ---- Timestamps on messages ---- */
-.ai-chat-timestamp {
-    display: block;
-    font-size: 10px;
-    color: rgba(255,255,255,0.35);
-    margin-top: 4px;
-    text-align: right;
-}
-.ai-chat-user .ai-chat-timestamp { text-align: right; }
-.ai-chat-model .ai-chat-timestamp { text-align: left; }
-
-/* ---- Bold / inline code inside chat bubbles ---- */
-.ai-chat-model strong { color: #fff; font-weight: 600; }
-.ai-chat-model code {
-    font-family: var(--font-mono, monospace);
-    font-size: 12px;
-    background: rgba(255,255,255,0.1);
-    padding: 1px 5px;
-    border-radius: 4px;
 }
