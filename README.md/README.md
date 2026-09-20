@@ -13,6 +13,7 @@ A DSA tracker for the combined **Striver + Love Babbar sheet (400 problems)** �
 - **Activity calendar + real streaks** — GitHub-style heatmap built from actual solve dates, not a fake counter
 - **Streak nudge** — warns you when you're about to break your streak
 - **Instant search** — filter by problem name, topic, company, or difficulty
+- **AI voice input** — speak your DSA question to the AI Mentor using the mic button in the chat
 - **Auth** — Google OAuth + email/password (JWT + HttpOnly cookies)
 
 ---
@@ -181,6 +182,8 @@ Issues and PRs welcome. Areas needing help:
 ![The ai analyzer](<Screenshot 2026-09-03 165532.png>)
 ![leetcode account sync](<Screenshot 2026-09-03 165713.png>)
 ![AI mentor(askanything)](<Screenshot 2026-09-03 165613.png>)
+![Root diagram(structure)](<diagram.png>)
+![Updated Ai mentor(voice assistant)](<Screenshot 2026-09-20 111239.png>)
 
 ## License
 
