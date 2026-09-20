@@ -1700,6 +1700,66 @@ function setupAiChat() {
       sendBtn.classList.toggle("has-text", chatInput.value.trim().length > 0);
     });
   }
+
+  // Voice-to-text mic button
+  setupVoiceInput();
+}
+
+function setupVoiceInput() {
+  const micBtn = $("ai-chat-voice");
+  const chatInput = $("ai-chat-input");
+  if (!micBtn || !chatInput) return;
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    micBtn.classList.add("unsupported");
+    micBtn.title = "Voice input not supported in this browser";
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = "en-US";
+
+  let isListening = false;
+
+  recognition.onresult = (event) => {
+    let transcript = "";
+    for (let i = 0; i < event.results.length; i++) {
+      transcript += event.results[i][0].transcript;
+    }
+    chatInput.value = transcript;
+    chatInput.dispatchEvent(new Event("input"));
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+    micBtn.classList.remove("listening");
+  };
+
+  recognition.onerror = (event) => {
+    console.error("Speech recognition error:", event.error);
+    isListening = false;
+    micBtn.classList.remove("listening");
+    if (event.error === "not-allowed") {
+      showToast("Microphone permission denied. Allow it in browser settings.", "error");
+    } else if (event.error !== "aborted") {
+      showToast("Voice input failed. Try again.", "error");
+    }
+  };
+
+  micBtn.addEventListener("click", () => {
+    if (isListening) {
+      recognition.stop();
+      isListening = false;
+      micBtn.classList.remove("listening");
+    } else {
+      recognition.start();
+      isListening = true;
+      micBtn.classList.add("listening");
+    }
+  });
 }
 
 // ==================== WEEKLY PLAN — flexible duration ====================

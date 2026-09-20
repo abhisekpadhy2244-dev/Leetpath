@@ -1358,6 +1358,40 @@ svg { display: block; }
     width: 16px; height: 16px;
     transition: all 0.25s;
 }
+
+/* Voice mic button — idle state */
+.ai-chat-voice-btn {
+    position: relative;
+}
+.ai-chat-voice-btn::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 14px;
+    border: 2px solid transparent;
+    transition: border-color 0.25s, box-shadow 0.25s;
+    pointer-events: none;
+}
+.ai-chat-voice-btn.listening {
+    background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+    border-color: rgba(239, 68, 68, 0.5) !important;
+    color: #fff !important;
+    box-shadow: 0 0 20px -4px rgba(239, 68, 68, 0.5);
+}
+.ai-chat-voice-btn.listening::after {
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+    animation: mic-pulse 1.2s ease-in-out infinite;
+}
+@keyframes mic-pulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15); }
+    50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.05); }
+}
+.ai-chat-voice-btn.unsupported {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
 /* When text is typed — light up */
 .ai-chat-input-row button.has-text {
     background: linear-gradient(135deg, #7c3aed, #a855f7);
