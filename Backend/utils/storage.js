@@ -56,6 +56,7 @@ class Storage {
       },
       leetcodeSessionCookie: null,
       progress: {},
+      dailyChallenges: {},
       activityLog: {}, // { "YYYY-MM-DD": count } — powers the calendar and real streak
       googleId: userData.googleId || null,
       avatar: userData.avatar || null,
@@ -191,6 +192,28 @@ class Storage {
     }
 
     return { current, longest, solvedToday };
+  }
+
+  // ---- Daily challenges ----
+
+  static markDailyChallengeSolved(userId, dateStr) {
+    const users = this.getUsers();
+    const index = users.findIndex((u) => u.id === userId);
+    if (index === -1) return null;
+    if (!users[index].dailyChallenges) users[index].dailyChallenges = {};
+    users[index].dailyChallenges[dateStr] = {
+      solved: true,
+      solvedAt: new Date().toISOString(),
+    };
+    users[index].updatedAt = new Date().toISOString();
+    this.saveUsers(users);
+    return users[index].dailyChallenges;
+  }
+
+  static getDailyChallengeStatus(userId, dateStr) {
+    const user = this.findUserById(userId);
+    if (!user || !user.dailyChallenges) return null;
+    return user.dailyChallenges[dateStr] || null;
   }
 }
 

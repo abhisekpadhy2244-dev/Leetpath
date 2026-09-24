@@ -407,6 +407,29 @@
                         <button class="streak-banner-dismiss" id="streak-banner-dismiss" aria-label="Dismiss for today">✕</button>
                     </div>
 
+                    <!-- Daily Challenge -->
+                    <div class="card daily-challenge-card" id="daily-challenge-card" hidden>
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <span class="daily-challenge-icon" aria-hidden="true">📅</span>
+                                Daily Challenge
+                            </h2>
+                            <span class="daily-challenge-date" id="daily-challenge-date"></span>
+                        </div>
+                        <div class="daily-challenge-body">
+                            <div class="daily-challenge-info">
+                                <a class="daily-challenge-link problem-link" id="daily-challenge-link" target="_blank" rel="noopener"></a>
+                                <span class="difficulty-badge" id="daily-challenge-difficulty"></span>
+                                <div class="topic-tags" id="daily-challenge-topics"></div>
+                            </div>
+                            <div class="daily-challenge-right">
+                                <span class="status-badge daily-challenge-status" id="daily-challenge-status"></span>
+                                <button class="btn btn-sm btn-ghost daily-challenge-check-btn" id="btn-check-daily" hidden>Check</button>
+                            </div>
+                        </div>
+                        <p class="daily-challenge-note" id="daily-challenge-note"></p>
+                    </div>
+
                     <!-- Activity Calendar -->
                     <div class="card calendar-card" id="calendar-card">
                         <div class="card-header">

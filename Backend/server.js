@@ -77,6 +77,7 @@ const progressRoutes = require("./routes/progress");
 const leetcodeRoutes = require("./routes/leetcode");
 const aiRoutes = require("./routes/ai");
 const googleAuthRoutes = require("./routes/google-auth");
+const dailyChallengeRoutes = require("./routes/daily-challenge");
 
 // Rate limiting
 app.use(
@@ -93,6 +94,7 @@ app.use("/api/progress", progressRoutes);
 app.use("/api/leetcode", leetcodeRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/auth/google", googleAuthRoutes);
+app.use("/api/daily-challenge", dailyChallengeRoutes);
 
 // Serve index.html for root
 app.get("/", (req, res) => {

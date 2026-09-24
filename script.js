@@ -343,8 +343,10 @@ async function initApp() {
   applyFilters();
   if (currentUser) {
     await loadActivity();
+    await loadDailyChallenge();
   } else {
     renderGuestState();
+    await loadDailyChallenge(); // guests can still see the challenge
   }
 }
 
@@ -360,6 +362,140 @@ function renderGuestState() {
     updateStats();
   } catch (error) {
     reportUnexpectedError(error);
+  }
+}
+
+// ==================== DAILY CHALLENGE ====================
+let dailyChallengeData = null;
+
+async function loadDailyChallenge() {
+  const card = $("daily-challenge-card");
+  if (!card) return;
+
+  try {
+    const res = await api(`${API_URL}/api/daily-challenge`, { auth: false });
+    if (!res.ok) throw new Error("Failed to load daily challenge");
+    const data = await res.json();
+    dailyChallengeData = data;
+    renderDailyChallenge(data);
+    card.hidden = false;
+
+    // If user is logged in, check if they solved it
+    if (currentUser) {
+      checkDailyChallengeStatus();
+    } else {
+      renderDailyChallengeStatus(false, null);
+      $("daily-challenge-note").textContent = "Sign in to track your daily challenge completion.";
+    }
+  } catch (error) {
+    console.error("loadDailyChallenge error:", error);
+    card.hidden = true;
+  }
+}
+
+function renderDailyChallenge(data) {
+  const dateEl = $("daily-challenge-date");
+  const linkEl = $("daily-challenge-link");
+  const diffEl = $("daily-challenge-difficulty");
+  const topicsEl = $("daily-challenge-topics");
+  const noteEl = $("daily-challenge-note");
+
+  if (dateEl) {
+    const date = new Date(data.date + "T00:00:00");
+    dateEl.textContent = date.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+
+  if (linkEl) {
+    linkEl.href = data.url;
+    linkEl.textContent = data.title;
+    // Add click handler for guests
+    linkEl.onclick = (e) => {
+      if (!currentUser) {
+        e.preventDefault();
+        openAuth("Sign in to track your daily challenge completion.");
+      }
+    };
+  }
+
+  if (diffEl) {
+    diffEl.textContent = data.difficulty;
+    diffEl.className = `difficulty-badge ${data.difficulty.toLowerCase()}`;
+  }
+
+  if (topicsEl) {
+    topicsEl.innerHTML = data.topicTags
+      .slice(0, 3)
+      .map((t) => `<span class="topic-tag">${escapeHtml(t)}</span>`)
+      .join("");
+  }
+
+  if (noteEl && !currentUser) {
+    noteEl.textContent = "Sign in to track your daily challenge completion.";
+  } else if (noteEl) {
+    noteEl.textContent = "";
+  }
+}
+
+async function checkDailyChallengeStatus() {
+  try {
+    const res = await api(`${API_URL}/api/daily-challenge/check`, {
+      method: "POST",
+      auth: true,
+    });
+    const data = await res.json();
+    renderDailyChallengeStatus(data.solved, data.date);
+  } catch (error) {
+    console.error("checkDailyChallengeStatus error:", error);
+    renderDailyChallengeStatus(false, null);
+  }
+}
+
+function renderDailyChallengeStatus(solved, date) {
+  const statusEl = $("daily-challenge-status");
+  const checkBtn = $("btn-check-daily");
+  const noteEl = $("daily-challenge-note");
+
+  if (statusEl) {
+    if (solved) {
+      statusEl.textContent = "✓ Completed";
+      statusEl.className = "status-badge daily-challenge-status completed";
+    } else {
+      statusEl.textContent = "Not Solved";
+      statusEl.className = "status-badge daily-challenge-status not-attempted";
+    }
+  }
+
+  if (checkBtn) {
+    checkBtn.hidden = solved;
+    checkBtn.onclick = async () => {
+      checkBtn.disabled = true;
+      checkBtn.textContent = "Checking...";
+      try {
+        await checkDailyChallengeStatus();
+      } finally {
+        checkBtn.disabled = false;
+        checkBtn.textContent = "Check";
+      }
+    };
+  }
+
+  if (noteEl && currentUser) {
+    noteEl.textContent = solved
+      ? "Nice work! You've completed today's challenge."
+      : "Solve this problem on LeetCode, then click Check.";
+  }
+}
+
+// Called after sync to refresh daily challenge status
+async function refreshDailyChallengeAfterSync() {
+  const card = $("daily-challenge-card");
+  if (card && !card.hidden && currentUser) {
+    await checkDailyChallengeStatus();
   }
 }
 
@@ -841,6 +977,7 @@ async function syncWithLeetCode() {
     updateStats();
     applyFilters();
     await loadActivity();
+    await refreshDailyChallengeAfterSync();
     showToast(data.message || "Synced!");
   } catch (error) {
     console.error("Sync error:", error);

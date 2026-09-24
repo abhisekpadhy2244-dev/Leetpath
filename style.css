@@ -569,6 +569,58 @@ svg { display: block; }
 }
 .streak-banner-dismiss:hover { background: var(--surface-pill); color: var(--text-primary); }
 
+/* ============ Daily Challenge ============ */
+.daily-challenge-card { padding: var(--sp-20); }
+.daily-challenge-icon { font-size: 1rem; }
+.daily-challenge-date {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+.daily-challenge-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  flex-wrap: wrap;
+}
+.daily-challenge-info {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.daily-challenge-link {
+  font-weight: 510;
+  font-size: 15px;
+}
+.daily-challenge-link:hover { color: var(--cta); }
+.daily-challenge-right {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  flex-shrink: 0;
+}
+.daily-challenge-status.completed {
+  background: var(--success-bg);
+  color: var(--success);
+}
+.daily-challenge-status.not-attempted {
+  background: var(--surface-pill);
+  color: var(--text-muted);
+}
+.daily-challenge-check-btn {
+  font-size: 12px;
+  padding: 4px 12px;
+}
+.daily-challenge-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: var(--sp-8);
+}
+.daily-challenge-card[hidden] { display: none; }
+
 /* ============ Activity calendar ============ */
 .calendar-card { padding: var(--sp-20); }
 .calendar-streak-summary { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); }
