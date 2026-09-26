@@ -1436,9 +1436,9 @@ function shouldUseCachedAnalysis(cache) {
   return solvedDelta < 5; // re-analyze only after 5+ new solves
 }
 
-async function analyzeProgress() {
+async function analyzeProgress(force = false) {
   const cache = getCachedAnalysis();
-  if (shouldUseCachedAnalysis(cache)) {
+  if (!force && shouldUseCachedAnalysis(cache)) {
     renderAnalysisModal(cache.data, true);
     return;
   }
@@ -1498,7 +1498,7 @@ function renderAnalysisModal(data, fromCache) {
 
   body.innerHTML = `
     <div class="ai-report">
-      ${fromCache ? '<span class="ai-cache-badge">Cached result — solve 5 more problems to refresh</span>' : ""}
+      ${fromCache ? '<span class="ai-cache-badge">Cached result — solve 5 more problems to refresh <button type="button" class="ai-cache-refresh" id="ai-refresh-btn">🔄 Refresh</button></span>' : ""}
 
       <div class="ai-score-section">
         <div class="ai-score-ring" style="--score: ${data.readinessScore}; --score-color: ${scoreColor}">
@@ -1569,6 +1569,12 @@ function renderAnalysisModal(data, fromCache) {
 
   $("ai-modal").classList.add("show");
   document.body.classList.add("modal-open");
+
+  $("ai-refresh-btn")?.addEventListener("click", () => {
+    localStorage.removeItem(AI_CACHE_KEY);
+    closeAiModal();
+    analyzeProgress(true);
+  });
 
   $("ai-download-btn").addEventListener("click", downloadAiReport);
   document.querySelectorAll(".ai-plan-choice-btn").forEach((btn) => {
