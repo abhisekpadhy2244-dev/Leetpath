@@ -60,6 +60,22 @@ function repairJson(str) {
   return null; // still broken
 }
 
+// Extract a parseable JSON string from an AI response, whether the model
+// wrapped it in markdown, added prose around it, or truncated it.
+// Returns the JSON string, or null if nothing parseable can be recovered.
+function extractJson(content) {
+  if (typeof content !== "string" || !content) return null;
+  const jsonMatch = content.match(/\{[\s\S]*\}/);
+  const candidates = [jsonMatch ? jsonMatch[0] : null, content];
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    try { JSON.parse(candidate); return candidate; } catch {}
+    const repaired = repairJson(candidate);
+    if (repaired) return repaired;
+  }
+  return null;
+}
+
 function getSolvedProblemsForUser(userId) {
   const user = Storage.findUserById(userId);
   if (!user) return [];
@@ -163,7 +179,7 @@ YOUR JOB: Analyze PATTERNS, not just summarize numbers. Rules:
 - confidenceBoost should be one genuine, specific, encouraging sentence referencing something real from their data.
 - Tone: a real mentor who is honest about gaps but genuinely rooting for them. No fluff.
 
-You MUST respond in valid JSON format only, matching this exact structure:
+You MUST respond with ONLY a valid JSON object (no prose, no markdown fences), matching this exact structure:
 {
   "strengths": ["string"],
   "weaknesses": ["string"],
@@ -175,23 +191,52 @@ You MUST respond in valid JSON format only, matching this exact structure:
   "confidenceBoost": "string"
 }`;
 
-    const response = await callOpenRouter([{ role: "user", content: prompt }], {
-      temperature: 0.3,
-      max_tokens: 1200,
-    });
+    let parsed = null;
+    let lastErr = null;
+    // Free models occasionally return prose instead of JSON — retry once
+    // with an even more explicit instruction before giving up.
+    for (let attempt = 0; attempt < 2 && !parsed; attempt++) {
+      const messages =
+        attempt === 0
+          ? [{ role: "user", content: prompt }]
+          : [
+              {
+                role: "system",
+                content:
+                  "You output ONLY raw JSON. No explanations, no markdown, no text before or after the JSON object.",
+              },
+              { role: "user", content: prompt },
+            ];
 
-    const data = await response.json();
-    const content = data.choices[0]?.message?.content;
-
-    if (!content) {
-      throw new Error("AI returned an empty response — try again.");
+      try {
+        const response = await callOpenRouter(messages, {
+          temperature: 0.3,
+          // Nemotron is a reasoning model — it burns tokens on hidden
+          // reasoning before the visible answer, so the budget must
+          // cover both or the JSON comes back truncated.
+          max_tokens: 4000,
+        });
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content;
+        const jsonString = extractJson(content);
+        if (!jsonString) {
+          lastErr = new Error("AI returned a non-JSON response — try again.");
+          continue;
+        }
+        const result = JSON.parse(jsonString);
+        // Sanity-check the shape the frontend depends on
+        if (typeof result.readinessScore !== "number") {
+          lastErr = new Error("AI returned an incomplete report — try again.");
+          continue;
+        }
+        parsed = result;
+      } catch (retryErr) {
+        lastErr = retryErr;
+      }
     }
 
-    // Extract JSON from the response (in case the model wraps it in markdown)
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    const jsonString = jsonMatch ? jsonMatch[0] : content;
-
-    res.json(JSON.parse(jsonString));
+    if (!parsed) throw lastErr || new Error("Analysis failed — try again.");
+    res.json(parsed);
   } catch (error) {
     console.error("AI analyze error:", error);
     if (
@@ -235,40 +280,56 @@ YOUR JOB: Identify their weakest 1-2 topics (low or zero counts on important top
 - focusArea: one sentence naming the overall weak area this plan targets
 - summary: 2-3 sentences on why this sequence was chosen
 
-You MUST respond in valid JSON format only, matching this exact structure:
+You MUST respond with ONLY a valid JSON object (no prose, no markdown fences), matching this exact structure:
 {
   "focusArea": "string",
   "days": [{"day": 1, "topic": "string", "problems": ["string"], "goal": "string"}],
   "summary": "string"
 }`;
 
-    const maxTokens = 1000 + days * 300;
+    // Extra headroom for the model's hidden reasoning tokens
+    const maxTokens = 1500 + days * 500;
 
-    const response = await callOpenRouter([{ role: "user", content: prompt }], {
-      temperature: 0.3,
-      max_tokens: maxTokens,
-    });
+    let parsed = null;
+    let lastErr = null;
+    // Retry once if the model returns prose/empty/truncated JSON
+    for (let attempt = 0; attempt < 2 && !parsed; attempt++) {
+      const messages =
+        attempt === 0
+          ? [{ role: "user", content: prompt }]
+          : [
+              {
+                role: "system",
+                content:
+                  "You output ONLY raw JSON. No explanations, no markdown, no text before or after the JSON object.",
+              },
+              { role: "user", content: prompt },
+            ];
 
-    const data = await response.json();
-    const content = data.choices[0]?.message?.content;
-
-    if (!content) {
-      throw new Error("AI returned an empty response — try again with a shorter plan or fewer problems.");
-    }
-
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    let jsonString = jsonMatch ? jsonMatch[0] : content;
-
-    // If the JSON is truncated, try to repair it
-    let parsed;
-    try { parsed = JSON.parse(jsonString); } catch {
-      const repaired = repairJson(jsonString);
-      if (!repaired) {
-        throw new Error("AI returned malformed JSON — try again.");
+      try {
+        const response = await callOpenRouter(messages, {
+          temperature: 0.3,
+          max_tokens: maxTokens,
+        });
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content;
+        const jsonString = extractJson(content);
+        if (!jsonString) {
+          lastErr = new Error("AI returned a non-JSON response — try again.");
+          continue;
+        }
+        const result = JSON.parse(jsonString);
+        if (!Array.isArray(result.days) || result.days.length === 0) {
+          lastErr = new Error("AI returned an incomplete plan — try again.");
+          continue;
+        }
+        parsed = result;
+      } catch (retryErr) {
+        lastErr = retryErr;
       }
-      parsed = JSON.parse(repaired);
     }
 
+    if (!parsed) throw lastErr || new Error("Plan generation failed — try again.");
     res.json(parsed);
   } catch (error) {
     console.error("AI weekly-plan error:", error);
