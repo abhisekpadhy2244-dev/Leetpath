@@ -151,12 +151,6 @@ async function callOpenRouter(messages, options = {}) {
 router.post("/analyze", auth, aiLimiter, async (req, res) => {
   try {
     const solved = getSolvedProblemsForUser(req.user.id);
-    if (solved.length < 3) {
-      return res.status(400).json({
-        message:
-          "Solve at least 3 problems first, then come back for a real analysis.",
-      });
-    }
 
     const { topicBreakdown, difficultyCounts, titleList, totalSolved } =
       summarizeForPrompt(solved);
@@ -177,6 +171,7 @@ YOUR JOB: Analyze PATTERNS, not just summarize numbers. Rules:
 - learningPath should be 4-5 concrete, ordered steps.
 - readinessScore (0-100) should be an honest estimate based on breadth and difficulty spread.
 - confidenceBoost should be one genuine, specific, encouraging sentence referencing something real from their data.
+- If they've solved ZERO or very few problems (fresh start): say so honestly but stay encouraging — readinessScore 0-15, strengths can highlight their intent to start, recommendedProblems should be classic beginner problems (e.g. Two Sum, Valid Parentheses, Best Time to Buy and Sell Stock), and learningPath should start from fundamentals (arrays, strings, hash maps) upward. Never invent problems they've solved.
 - Tone: a real mentor who is honest about gaps but genuinely rooting for them. No fluff.
 
 You MUST respond with ONLY a valid JSON object (no prose, no markdown fences), matching this exact structure:
@@ -254,11 +249,6 @@ You MUST respond with ONLY a valid JSON object (no prose, no markdown fences), m
 router.post("/weekly-plan", auth, aiLimiter, async (req, res) => {
   try {
     const solved = getSolvedProblemsForUser(req.user.id);
-    if (solved.length < 3) {
-      return res.status(400).json({
-        message: "Solve at least 3 problems first, then come back for a plan.",
-      });
-    }
 
     const days = Math.min(14, Math.max(3, parseInt(req.body?.days, 10) || 7));
     const { topicBreakdown, titleList, totalSolved } =
@@ -277,6 +267,7 @@ YOUR JOB: Identify their weakest 1-2 topics (low or zero counts on important top
 - Never repeats a problem they've already solved
 - Has a one-line goal per day
 - Must contain EXACTLY ${days} day entries, numbered 1 to ${days}
+- If they've solved ZERO problems, build a beginner-friendly plan from fundamentals (arrays, strings, hash map) easy-to-medium — don't reference past solves.
 - focusArea: one sentence naming the overall weak area this plan targets
 - summary: 2-3 sentences on why this sequence was chosen
 
