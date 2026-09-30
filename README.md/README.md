@@ -15,6 +15,7 @@ A DSA tracker for the combined **Striver + Love Babbar sheet (400 problems)** �
 - **Instant search** — filter by problem name, topic, company, or difficulty
 - **AI voice input** — speak your DSA question to the AI Mentor using the mic button in the chat
 - **Auth** — Google OAuth + email/password (JWT + HttpOnly cookies)
+- **Daily Challenge** — automatically fetches LeetCode's daily problem, tracks your completion status, and displays it on the dashboard
 
 ---
 
@@ -28,6 +29,7 @@ A DSA tracker for the combined **Striver + Love Babbar sheet (400 problems)** �
 | Data | JSON file (400 problems), user progress in JSON |
 | Deployment | Frontend → Vercel, Backend → Render |
 | Security | Helmet, CORS (split-origin), express-rate-limit |
+| Data | JSON file (400 problems), user progress in JSON, LeetCode GraphQL (Daily Challenge) |
 
 ---
 
@@ -145,6 +147,7 @@ GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
 | PUT | `/api/progress/:id` | Update single problem status |
 | POST | `/api/leetcode/sync` | Trigger LeetCode sync |
 | GET | `/api/leetcode/status` | Check sync status |
+| GET | `/api/leetcode/daily` | Fetch the current LeetCode Daily Challenge |
 
 ---
 
@@ -154,7 +157,9 @@ GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
 - **Striver's SDE Sheet** (~180 problems)
 - **Love Babbar's DSA Sheet** (~450 problems, deduplicated)
 
-Each entry includes: `id`, `name`, `url`, `difficulty`, `topics[]`, `companies[]`.
+Each entry includes: `id`, `name`, `url`, `difficulty`, `topics[]`, `companies[]`.*Additionally, the dashboard fetches the dynamic LeetCode Daily Challenge via GraphQL.*
+
+
 
 ---
 
@@ -164,6 +169,7 @@ Each entry includes: `id`, `name`, `url`, `difficulty`, `topics[]`, `companies[]
 - **Streak logic** initially used `localStorage` (fake); rewrote to compute from actual LeetCode `solvedAt` timestamps
 - **UI redesign halfway through** — first version was cluttered; stripped to essentials after understanding "clean"
 - **Rate limiting + Helmet** early prevents headaches later
+- **Daily Challenge caching** — fetching the daily problem on every page load was slow; implemented a lightweight cache that refreshes every 24 hours to avoid hitting LeetCode's rate limits.
 
 ---
 
@@ -184,6 +190,7 @@ Issues and PRs welcome. Areas needing help:
 ![AI mentor(askanything)](<Screenshot 2026-09-03 165613.png>)
 ![Root diagram(structure)](<diagram.png>)
 ![Updated Ai mentor(voice assistant)](<Screenshot 2026-09-20 111239.png>)
+![Dashboard-Leetcode Daily challenges(GraphQL)](<Screenshot 2026-09-30 233057.png>)
 
 ## License
 

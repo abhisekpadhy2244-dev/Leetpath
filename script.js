@@ -1275,8 +1275,7 @@ function escapeHtml(text) {
     .replace(/'/g, "&#039;");
 }
 
-function renderMd(text) {
-  if (!text) return "";
+function renderInlineMd(text) {
   let safe = escapeHtml(text);
   // Bold: **text**
   safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
@@ -1285,6 +1284,30 @@ function renderMd(text) {
   // Line breaks
   safe = safe.replace(/\n/g, "<br>");
   return safe;
+}
+
+// Renders a small markdown subset. Fenced ``` blocks become <pre><code>; a fence
+// that hasn't been closed yet (still streaming, or the reply was cut off) is
+// rendered as an open code block instead of leaking raw backticks.
+function renderMd(text) {
+  if (!text) return "";
+  const fence = /```([\w+#.-]*)[ \t]*\n?([\s\S]*?)(?:```|$)/g;
+  let out = "";
+  let last = 0;
+  let m;
+  while ((m = fence.exec(text)) !== null) {
+    out += renderInlineMd(text.slice(last, m.index).replace(/\n$/, ""));
+    const lang = m[1] ? ` data-lang="${escapeHtml(m[1])}"` : "";
+    out +=
+      `<pre class="ai-code"${lang} style="overflow-x:auto;white-space:pre;` +
+      `background:rgba(0,0,0,.35);padding:10px 12px;border-radius:8px;` +
+      `margin:8px 0;font-size:.85em;max-width:100%;">` +
+      `<code style="background:none;padding:0;border:0;">` +
+      `${escapeHtml(m[2].replace(/\n$/, ""))}</code></pre>`;
+    last = fence.lastIndex;
+  }
+  out += renderInlineMd(text.slice(last).replace(/^\n/, ""));
+  return out;
 }
 
 // ==================== AVATAR HELPER ====================
@@ -1747,15 +1770,54 @@ async function sendChatMessage() {
     const bubble = createStreamingBubble();
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
-    let fullReply = "";
+    let raw = "";
+    let streamBroke = null; // set if the connection itself failed mid-read
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      const chunkText = decoder.decode(value, { stream: true });
-      fullReply += chunkText;
-      bubble.innerHTML = renderMd(fullReply);
+    // The server appends "\u001e" + TRUNCATED | ERROR:<msg> when a reply did not
+    // finish cleanly. Everything before the marker is the real reply text.
+    const splitStream = (s) => {
+      const i = s.indexOf("\u001e");
+      return i === -1
+        ? { text: s, marker: null }
+        : { text: s.slice(0, i).replace(/\s+$/, ""), marker: s.slice(i + 1) };
+    };
+    const paint = () => {
+      bubble.innerHTML = renderMd(splitStream(raw).text);
       $("ai-chat-messages").scrollTop = $("ai-chat-messages").scrollHeight;
+    };
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        raw += decoder.decode(value, { stream: true });
+        paint();
+      }
+      raw += decoder.decode(); // flush any bytes the decoder was still holding
+      paint();
+    } catch (readErr) {
+      // Network dropped mid-stream (Render restart, wifi, etc.). Keep what we
+      // have and tell the user, instead of pretending the reply was complete.
+      streamBroke = readErr.message || "Connection lost";
+      paint();
+    }
+
+    const { text: fullReply, marker } = splitStream(raw);
+    let note = null;
+    if (marker === "TRUNCATED") {
+      note = 'The reply hit the length limit. Type "continue" to get the rest.';
+    } else if (marker && marker.startsWith("ERROR:")) {
+      note = `Reply interrupted: ${marker.slice(6)} Type "continue" to retry from here.`;
+    } else if (streamBroke) {
+      note = `Connection lost mid-reply (${streamBroke}). Type "continue" to retry from here.`;
+    }
+    if (note) {
+      const noteEl = document.createElement("div");
+      noteEl.className = "ai-chat-stream-note";
+      noteEl.style.cssText =
+        "margin-top:8px;font-size:.8em;opacity:.75;font-style:italic;";
+      noteEl.textContent = `\u26a0\ufe0f ${note}`;
+      bubble.appendChild(noteEl);
     }
 
     const modelTs = Date.now();
